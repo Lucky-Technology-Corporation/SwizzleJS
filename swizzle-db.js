@@ -1,4 +1,4 @@
-const connectDB = require('./swizzle-db-connection');
+const {connectDB} = require('./swizzle-db-connection');
 
 let _db;
 

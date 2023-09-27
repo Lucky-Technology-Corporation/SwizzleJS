@@ -8,14 +8,14 @@ module.exports = {
     dbRoutes: require('./swizzle-db-driver'),
     internalRoutes: require('./swizzle-internal'),
     analyticsMiddleware: require('./swizzle-monitoring'),  
-    
+
     setupPassport: authMiddleware.setupPassport,
     connectDB: dbUtilities.connectDB,
     setupNotifications: notifications.setupNotifications,
     storageRoutes: storage.storageRoutes,
 
-    optionalAuthenticate: authMiddleware.optionalAuthenticate,
-    requiredAuthenticate: authMiddleware.requiredAuthenticate,
+    optionalAuthentication: authMiddleware.optionalAuthentication,
+    requiredAuthentication: authMiddleware.requiredAuthentication,
 
     db: require('./swizzle-db'),
     secrets: require('./swizzle-secrets'),

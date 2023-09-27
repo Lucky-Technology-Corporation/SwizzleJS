@@ -43,7 +43,7 @@ function setupPassport() {
     });
 }
 
-const optionalAuthenticate = (req, res, next) => {
+const optionalAuthentication = (req, res, next) => {
     passport.authenticate('jwt', { session: false }, (err, user, info) => {
       if (err) { return next(err); }
       if (user) { req.user = user; } // Attach the user to the request object if authenticated
@@ -51,7 +51,7 @@ const optionalAuthenticate = (req, res, next) => {
     })(req, res, next);
 };  
 
-const requiredAuthenticate = (req, res, next) => {
+const requiredAuthentication = (req, res, next) => {
     passport.authenticate('jwt', { session: false }, (err, user, info) => {
         if (err) { return next(err); }
         if (!user) { return res.status(401).send({error: "Unauthorized"}); }
@@ -60,6 +60,6 @@ const requiredAuthenticate = (req, res, next) => {
     })(req, res, next);
 };
 
-module.exports = {setupPassport, optionalAuthenticate, requiredAuthenticate};
+module.exports = {setupPassport, optionalAuthentication, requiredAuthentication};
 
 

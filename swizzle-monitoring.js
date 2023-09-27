@@ -1,12 +1,11 @@
 const { v4: uuidv4 } = require('uuid');
-const { getDb } = require('./swizzle-db-connection');
+const { db } = require('./swizzle-db');
 const { AsyncLocalStorage } = require('async_hooks');
 require('dotenv').config();
 
 const asyncLocalStorage = new AsyncLocalStorage();
 
 const saveAnalyticsAsync = async (req, res, next) => {
-    const db = getDb();
     const traceId = req.headers['x-injected-trace-id'];
     const environment = process.env.SWIZZLE_ENV || "test";
     const userId = req.user ? req.user.userId : null;

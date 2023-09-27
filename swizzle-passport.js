@@ -1,7 +1,7 @@
 const passport = require('passport');
 const JwtStrategy = require('passport-jwt').Strategy;
 const ExtractJwt = require('passport-jwt').ExtractJwt;
-const { getDb } = require('./swizzle-db-connection');
+const { db } = require('./swizzle-db');
 const mongodb = require('mongodb');
 require('dotenv').config();
 
@@ -12,7 +12,6 @@ opts.secretOrKey = process.env.SWIZZLE_JWT_SECRET_KEY;
 function setupPassport() {
     passport.use(new JwtStrategy(opts, async (jwt_payload, done) => {
         try {
-            const db = getDb();
             const users = db.collection('_swizzle_users'); 
             var user = await users.findOne({ _id: new mongodb.ObjectId(jwt_payload.userId) });   
 
@@ -33,9 +32,7 @@ function setupPassport() {
     });
 
     passport.deserializeUser(async function(id, done) {
-        const db = getDb();
         const users = db.collection('_swizzle_users');
-
         try {
             var user = await users.findOne({ _id: new mongodb.ObjectId(id) });
             user.userId = id;

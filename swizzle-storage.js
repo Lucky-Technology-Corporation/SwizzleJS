@@ -1,6 +1,6 @@
 const { Storage } = require('@google-cloud/storage');
 const storage = new Storage(); //Check on this - is this working in digital ocean?
-const { getDb } = require('./swizzle-db-connection');
+const { db } = require('./swizzle-db');
 const { optionalAuthenticate } = require('./swizzle-passport');
 const express = require('express');
 const { ObjectId } = require('mongodb');
@@ -16,7 +16,7 @@ router.get('/*key', optionalAuthenticate, async (request, result) => {
       const nameWithoutExtension = lastIndex !== -1 ? fileName.substring(0, lastIndex) : fileName;
 
       //Get document
-      const db = getDb();
+      
       const document = await db
         .collection('_swizzle_storage')
         .findOne({ _id: ObjectId(nameWithoutExtension) });
@@ -70,7 +70,7 @@ router.get('/*key', optionalAuthenticate, async (request, result) => {
   // router.post('/*key', optionalAuthenticate, async (request, result) => {
   //   try {
   //     const fileName = request.params.key;
-  //     const db = getDb();
+  //     
   //     const document = await db
   //       .collection('_swizzle_storage')
   //       .findOne({ fileName: fileName });
@@ -122,7 +122,7 @@ router.get('/*key', optionalAuthenticate, async (request, result) => {
         userObjectId = new mongodb.ObjectId(ownerUserId);
       }
   
-      const db = getDb();
+      
       const fileExtension = fileName.substring(filename.lastIndexOf('.') + 1);  
       const document = {
         userId: userObjectId,
@@ -179,7 +179,7 @@ router.get('/*key', optionalAuthenticate, async (request, result) => {
     //         bucket = "private";
     //         userObjectId = new mongodb.ObjectId(ownerUserId)
     //     }
-    //     const db = getDb();
+    //     
     //     const dbDocument = await db.collection("_swizzle_storage").findOne({fileName: fileName});
     //     if(dbDocument){
     //         console.error("[SwizzleStorage] " + fileName + " already exists.")

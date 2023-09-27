@@ -4,8 +4,9 @@ module.exports = {
     internalRoutes: require('./swizzle-internal'),
     analyticsMiddleware: require('./swizzle-monitoring'),
     authMiddleware: require('./swizzle-passport'),    
+    dbUtilities: require('./swizzle-db-connection'),
 
-    db: require('./swizzle-db-connection'),
+    db: require('./swizzle-db'),
     notifications: require('./swizzle-notifications'),
     secrets: require('./swizzle-secrets'),
     storage: require('./swizzle-storage'),

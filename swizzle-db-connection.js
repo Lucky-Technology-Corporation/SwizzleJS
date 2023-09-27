@@ -5,6 +5,11 @@ require('dotenv').config();
 let _db;
 
 const connectDB = async () => {
+  if (_db) {
+    console.log("Reusing existing DB connection.");
+    return _db;
+  }
+
   try {
     const client = await MongoClient.connect(process.env.SWIZZLE_MONGODB_CONN_STRING, {
       useUnifiedTopology: true,
@@ -13,6 +18,7 @@ const connectDB = async () => {
     _db = client.db();
 
     console.log('MongoDB connected…');
+    return _db;
   } catch (err) {
     console.error(err.message);
     // Exit process with failure
@@ -20,12 +26,6 @@ const connectDB = async () => {
   }
 };
 
-const getDb = () => {
-  if (!_db) {
-    throw Error('Database not initialized. Did you forget to call connectDB?');
-  }
-  return _db;
-};
 
 const UID = (user) => {
   if(!user || !user.userId){
@@ -36,6 +36,5 @@ const UID = (user) => {
 
 module.exports = {
   connectDB,
-  getDb,
   UID
 };

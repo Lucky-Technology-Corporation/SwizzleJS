@@ -3,13 +3,12 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const mongodb = require('mongodb');
-const { getDb } = require('./swizzle-db-connection');
+const { db } = require('./swizzle-db');
 
 router.get('/:key', passport.authenticate('jwt', { session: false }), async (request, result) => {
     try{
         const key = request.params.key;
         const userId = request.user.userId;
-        const db = getDb();
         
         var doc = await db.collection(key).findOne({ _swizzle_uid: new mongodb.ObjectId(userId) })
         if (!doc) {
@@ -33,7 +32,6 @@ router.post('/:key', passport.authenticate('jwt', { session: false }), async (re
     try{
         const key = request.params.key;
         const userId = request.user.userId;
-        const db = getDb();
         
         const userObjectId = new mongodb.ObjectId(userId)
         

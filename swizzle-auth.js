@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const ObjectId = require('mongodb').ObjectId;
-const { getDb, UID } = require('./swizzle-db-connection');
+const { UID } = require('./swizzle-db-connection');
+const { db } = require('./swizzle-db');
 const passport = require('passport');
 require('dotenv').config();
 
@@ -16,7 +17,7 @@ if(accountSid && authToken){
 
 //Anonymous login
 router.post('/anonymous', async (request, result) => {
-    const db = getDb();  
+      
     const users = db.collection('_swizzle_users');  
 
     const deviceId = request.body.deviceId;
@@ -65,7 +66,7 @@ async function sendSMS(phoneNumber, message) {
 }
 
 router.post('/sms/request-code', async (request, result) => {
-    const db = getDb();
+    
     const users = db.collection('_swizzle_users');
 
     const phoneNumber = request.body.phoneNumber;
@@ -93,7 +94,7 @@ router.post('/sms/request-code', async (request, result) => {
 });
 
 router.post('/sms/verify-code', async (request, result) => {
-    const db = getDb();
+    
     const users = db.collection('_swizzle_users');
 
     // Get the userId from the JWT token in the Authorization header
@@ -130,7 +131,7 @@ router.post('/refresh', async (request, result) => {
             return result.status(400).send({ error: 'Refresh token is required' });
         }
 
-        const db = getDb();
+        
         const users = db.collection('_swizzle_users');
 
         //find the user and update if we do
@@ -160,7 +161,7 @@ router.post('/refresh', async (request, result) => {
 
 router.post('/push-token', passport.authenticate('jwt', { session: false }), async (request, result) => {
     try{
-        const db = getDb();
+        
         const users = db.collection('_swizzle_users');
         await users.findOneAndUpdate({ _id: UID(request.user) }, { $set: { pushToken: request.body.pushToken } });
         result.status(200).send({message: "Push token updated"});
@@ -172,7 +173,7 @@ router.post('/push-token', passport.authenticate('jwt', { session: false }), asy
 
 router.post('/metadata', passport.authenticate('jwt', { session: false }), async (request, result) => {
     try{
-        const db = getDb();
+        
         const users = db.collection('_swizzle_users');
         
         const updateObject = {};
@@ -192,7 +193,7 @@ router.post('/metadata', passport.authenticate('jwt', { session: false }), async
 
 router.post('/delete-account', passport.authenticate('jwt', { session: false }), async (request, result) => {
     try{
-        const db = getDb();
+        
         const users = db.collection('_swizzle_users');
         await users.deleteOne({ _id: UID(request.user) });   
         result.status(200).send({message: "Account deleted"});
@@ -205,7 +206,7 @@ router.post('/delete-account', passport.authenticate('jwt', { session: false }),
 //This sets arbitrary user data
 router.post('/update-info', passport.authenticate('jwt', { session: false }), async (request, result) => {
     try{
-        const db = getDb();
+        
         const users = db.collection('_swizzle_users');
         let ip = request.headers['x-forwarded-for'] || request.socket.remoteAddress;
 

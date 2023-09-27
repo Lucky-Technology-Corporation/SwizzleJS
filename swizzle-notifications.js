@@ -1,5 +1,5 @@
 const { ObjectId } = require('mongodb');
-const { getDb } = require('./swizzle-db-connection');
+const { db } = require('./swizzle-db');
 const secrets = require('./swizzle-secrets');
 
 var apn = require('apn');
@@ -35,16 +35,20 @@ function setupNotifications() {
 
 async function sendNotification(user, title, body, badge) {
     var badgeNumber = 0
-    if(badge){ badgeNumber = badge }
+    if(badge && !isNaN(parseInt(badge))){ badgeNumber = parseInt(badge) }
 
-    const notification = new apn.Notification({
+    var notification = new apn.Notification({
         alert: {
           title: title,
           body: body,
         },
-        badge: badgeNumber,
         topic: notificationBundleId
     });
+
+    if(badgeNumber > 0){
+        notification.badge = badgeNumber;
+    }
+
     sendNotificationHelper(user, notification);
 }
 
@@ -54,7 +58,6 @@ async function sendNotificationHelper(user, notification) {
     }
 
     if (typeof user === 'string' || user instanceof ObjectId) {
-        const db = getDb();
         try {
             user = await db.collection('_swizzle_users').findOne({ _id: new ObjectId(user) });
         } catch (err) {

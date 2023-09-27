@@ -51,6 +51,15 @@ const optionalAuthenticate = (req, res, next) => {
     })(req, res, next);
 };  
 
-module.exports = {setupPassport, optionalAuthenticate};
+const requiredAuthenticate = (req, res, next) => {
+    passport.authenticate('jwt', { session: false }, (err, user, info) => {
+        if (err) { return next(err); }
+        if (!user) { return res.status(401).send({error: "Unauthorized"}); }
+        req.user = user; // Attach the user to the request object if authenticated
+        next(); // Always continue, even if not authenticated
+    })(req, res, next);
+};
+
+module.exports = {setupPassport, optionalAuthenticate, requiredAuthenticate};
 
 

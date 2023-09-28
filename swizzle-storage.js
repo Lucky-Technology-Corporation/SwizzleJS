@@ -78,7 +78,7 @@ router.get('/*key', optionalAuthentication, async (request, result) => {
   Returns the signed file URL if found overriding the access level.
   */
   async function getFile(filename){
-    const isUrl = filename.startsWith('http');
+    const isUrl = filename.startsWith('http') || filename.startsWith('/swizzle/storage');
     if(isUrl){
       const fileName = filename.substring(filename.lastIndexOf('/') + 1);
       const nameWithoutExtension = fileName.substring(0, fileName.lastIndexOf('.'));
@@ -124,7 +124,7 @@ router.get('/*key', optionalAuthentication, async (request, result) => {
 
       await setItem(bucket, result.insertedId + "." + fileExtension, fileData);
       
-      return result.insertedId + "." + fileExtension;
+      return "/swizzle/storage/" + result.insertedId + "." + fileExtension;
 
     } catch (error) {
       console.error(error);

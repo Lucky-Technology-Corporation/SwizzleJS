@@ -23,5 +23,6 @@ module.exports = {
     sendNotification: notifications.sendNotification,
     saveFile: storage.saveFile,
     deleteFile: storage.deleteFile,
+    getFile: storage.getFile,
 };
   

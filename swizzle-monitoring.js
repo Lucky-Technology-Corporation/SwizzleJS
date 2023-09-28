@@ -4,6 +4,7 @@ const { AsyncLocalStorage } = require('async_hooks');
 require('dotenv').config();
 
 const asyncLocalStorage = new AsyncLocalStorage();
+const oldConsole = global.console;
 
 const saveAnalyticsAsync = async (req, res, next) => {
     const traceId = req.headers['x-injected-trace-id'];
@@ -29,50 +30,74 @@ const saveAnalyticsAsync = async (req, res, next) => {
     return analytics.insertOne({ traceId, userId, ip, url, method, userAgent, createdAt, environment, responseCode, request, response, timeTaken, headers });
 };
 
-const requestSaver = (req, res, next) => {
-    req.headers['x-injected-trace-id'] = uuidv4();
-    req.id = req.headers['x-injected-trace-id'];
-    req.start = new Date().getTime();
-    
-    asyncLocalStorage.run(req.id, () => {
-        next();
-    });
-
-    res.on('finish', () => {
-        saveAnalyticsAsync(req, res, next);
-    });
-};
-
-function createStructuredLog(args, reqId) {
+function createStructuredLog(args, reqId, level) {
     const log = {
         text: args.join(' '),
         timestamp: new Date().getTime(),
         request_id: reqId,
+        level: level,
     }
     return JSON.stringify(log)
 }
 
-const oldConsole = global.console;
+const saveLogsAsync = async (logs, reqId) => {
+    const analytics = db.collection('_swizzle_analytics');
+    return analytics.updateOne(
+        { traceId: reqId },
+        { $set: { logs } },
+        { upsert: true }
+    );
+};
+
+const requestSaver = (req, res, next) => {
+    req.headers['x-injected-trace-id'] = uuidv4();
+    req.id = req.headers['x-injected-trace-id'];
+    req.start = new Date().getTime();
+    const requestLogs = [];
+
+    asyncLocalStorage.run({ logs: requestLogs, id: req.id }, () => {
+        next();
+    });
+
+    res.on('finish', async () => {
+        await saveAnalyticsAsync(req, res, next);
+        await saveLogsAsync(requestLogs, req.id);
+    });
+};
+
+
 global.console = {
     log: function (...args) {
-        const reqId = asyncLocalStorage.getStore();
-        const logMessage = createStructuredLog(args, reqId);
-        oldConsole.log(logMessage);
+        const { logs, id } = asyncLocalStorage.getStore() || {};
+        if (logs && id) {
+            const logMessage = createStructuredLog(args, id, "log");
+            logs.push(logMessage);
+            oldConsole.log(logMessage);
+        }
     },
     info: function (...args) {
-        const reqId = asyncLocalStorage.getStore();
-        const logMessage = createStructuredLog(args, reqId);
-        oldConsole.info(logMessage);
+        const { logs, id } = asyncLocalStorage.getStore() || {};
+        if (logs && id) {
+            const logMessage = createStructuredLog(args, id, "info");
+            logs.push(logMessage);
+            oldConsole.info(logMessage);
+        }
     },
     warn: function (...args) {
-        const reqId = asyncLocalStorage.getStore();
-        const logMessage = createStructuredLog(args, reqId);
-        oldConsole.warn(logMessage);
+        const { logs, id } = asyncLocalStorage.getStore() || {};
+        if (logs && id) {
+            const logMessage = createStructuredLog(args, id, "warn");
+            logs.push(logMessage);
+            oldConsole.warn(logMessage);
+        }
     },
     error: function (...args) {
-        const reqId = asyncLocalStorage.getStore();
-        const logMessage = createStructuredLog(args, reqId);
-        oldConsole.error(logMessage);
+        const { logs, id } = asyncLocalStorage.getStore() || {};
+        if (logs && id) {
+            const logMessage = createStructuredLog(args, id, "error");
+            logs.push(logMessage);
+            oldConsole.error(logMessage);
+        }
     }
 };
 

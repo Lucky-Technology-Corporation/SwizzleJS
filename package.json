@@ -3,6 +3,19 @@
     "version": "1.0.9",
     "main": "index.js",
     "scripts": {},
-    "dependencies": {}
-  }
-  
+    "dependencies": {
+        "@google-cloud/storage": "latest",
+        "apn": "latest",
+        "async_hooks": "latest",
+        "crypto": "latest",
+        "dotenv": "latest",
+        "express": "latest",
+        "jsonwebtoken": "latest",
+        "mongodb": "latest",
+        "passport": "latest",
+        "passport-jwt": "latest",
+        "telnyx": "latest",
+        "app-store-server-api": "latest",
+        "uuid": "latest"
+    }
+}

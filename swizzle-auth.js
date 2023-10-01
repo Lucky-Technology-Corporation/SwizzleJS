@@ -6,13 +6,13 @@ const { UID } = require('./swizzle-db-connection');
 const { db } = require('./swizzle-db');
 const passport = require('passport');
 require('dotenv').config();
+const Telnyx = require('telnyx');
 
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
+const telnyx_key = process.env.SWIZZLE_TELNYX_KEY;
 
-var twilioClient = null;
-if(accountSid && authToken){
-    twilioClient = require('twilio')(accountSid, authToken);
+var telnyxClient = null;
+if(telnyx_key){
+    telnyxClient = new Telnyx(telnyx_key);
 }
 
 //Anonymous login
@@ -51,18 +51,15 @@ router.post('/anonymous', async (request, result) => {
 //SMS login
 
 async function sendSMS(phoneNumber, message) {    
-    if(!twilioClient){
+    if(!telnyxClient){
         return;
     }
     
-    const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
-    
-    return twilioClient.messages
-        .create({
-            body: message,
-            from: twilioPhoneNumber,
-            to: phoneNumber
-        });
+    return telnyx.messages.create({
+        from: '+18887881468', 
+        to: phoneNumber, 
+        text: message
+    });
 }
 
 router.post('/sms/request-code', async (request, result) => {

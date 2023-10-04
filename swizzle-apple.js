@@ -1,4 +1,6 @@
 const express = require('express');
+const { db } = require('./swizzle-db');
+const { UID } = require('./swizzle-db-connection');
 const router = express.Router();
 import { decodeNotificationPayload, isDecodedNotificationDataPayload, isDecodedNotificationSummaryPayload } from "app-store-server-api"
 
@@ -12,12 +14,13 @@ router.post('/apple-receipt', async (request, result) => {
             const renewalInfo = await decodeRenewalInfo(data.signedRenewalInfo)
 
             const userId = transactionInfo.appAccountToken
+            const productId = transactionInfo.productId
 
-            handleIncomingAppleMessage(payload);
+            await handleIncomingAppleMessage(payload, userId, productId);
             return result.status(200).send({message: "Notification received"});
         }
         
-        if (isdecodedNotificationSummaryPayload(payload)) {
+        if (isDecodedNotificationSummaryPayload(payload)) {
             //Not implemented yet
             //This is called when the developer extends the subscription for all users
             return result.status(200).send({message: "Notification received"});
@@ -29,54 +32,60 @@ router.post('/apple-receipt', async (request, result) => {
     }
 });
 
-function handleIncomingAppleMessage(payload){
+async function updateUserSubscription(userId, state){
+  const users = db.collection('_swizzle_users');
+  await users.updateOne({ _id: UID(userId) }, { $set: { "subscription": state } }, { upsert: true });
+  return;
+}
+
+async function handleIncomingAppleMessage(payload, userId, productId){
     const notification_type = payload.notificationType;
     const subtype = payload.subtype;
     
     switch(notification_type) {
         case 'PRICE_INCREASE':
           if (subtype === 'ACCEPTED') {
-            // Handle accepted price increase
+            return updateUserSubscription(userId, 'subscribed_'+productId);
           } else if (subtype === 'PENDING') {
-            // Handle pending price increase
+            return updateUserSubscription(userId, 'subscribed_'+productId);
           }
           break;
           
         case 'DID_CHANGE_RENEWAL_STATUS':
           if (subtype === 'AUTO_RENEW_DISABLED') {
-            // Handle auto-renew disabled
+            return updateUserSubscription(userId, 'canceled');
           } else if (subtype === 'AUTO_RENEW_ENABLED') {
-            // Handle auto-renew enabled
+            return updateUserSubscription(userId, 'subscribed_'+productId);
           }
           break;
     
         case 'DID_RENEW':
           if (subtype === 'BILLING_RECOVERY') {
-            // Handle billing recovery
+            return updateUserSubscription(userId, 'subscribed_'+productId);
           }
           break;
     
         case 'EXPIRED':
           if (subtype === 'BILLING_RETRY') {
-            // Handle billing retry
+            return updateUserSubscription(userId, 'canceled');
           } else if (subtype === 'PRICE_INCREASE') {
-            // Handle price increase
+            return updateUserSubscription(userId, 'canceled');
           } else if (subtype === 'PRODUCT_NOT_FOR_SALE') {
-            // Handle product not for sale
+            return updateUserSubscription(userId, 'canceled');
           } else if (subtype === 'VOLUNTARY') {
-            // Handle voluntary expiration
+            return updateUserSubscription(userId, 'canceled');
           }
           break;
     
         case 'DID_CHANGE_RENEWAL_PREF':
           if (subtype === 'DOWNGRADE') {
-            // Handle downgrade
+            return updateUserSubscription(userId, 'subscribed_'+productId);
           } else if (subtype === 'UPGRADE') {
-            // Handle upgrade
+            return updateUserSubscription(userId, 'subscribed_'+productId);
           }
           break;
     
-        case 'RENEWAL_EXTENSION':
+        case 'RENEWAL_EXTENSION': //App Store is attempting to extend the subscription renewal date that you request by calling Extend Subscription Renewal Dates for All Active Subscribers.
           if (subtype === 'FAILURE') {
             // Handle failure
           } else if (subtype === 'SUMMARY') {
@@ -86,20 +95,23 @@ function handleIncomingAppleMessage(payload){
     
         case 'DID_FAIL_TO_RENEW':
           if (subtype === 'GRACE_PERIOD') {
-            // Handle grace period
+            return updateUserSubscription(userId, 'canceled');
           }
           break;
     
         case 'SUBSCRIBED':
           if (subtype === 'INITIAL_BUY') {
-            // Handle initial buy
+            return updateUserSubscription(userId, 'subscribed_'+productId);
           } else if (subtype === 'RESUBSCRIBE') {
-            // Handle resubscribe
+            return updateUserSubscription(userId, 'subscribed_'+productId);
           }
           break;
     
         default:
-          // Handle unknown types
-          break;
+          return;
       }    
+
+      return;
 }
+
+export default router;

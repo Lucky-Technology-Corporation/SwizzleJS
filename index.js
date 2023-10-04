@@ -8,6 +8,7 @@ module.exports = {
     dbRoutes: require('./swizzle-db-driver'),
     internalRoutes: require('./swizzle-internal'),
     analyticsMiddleware: require('./swizzle-monitoring'),  
+    appleRoutes: require('./swizzle-apple'),
 
     setupPassport: authMiddleware.setupPassport,
     connectDB: dbUtilities.connectDB,

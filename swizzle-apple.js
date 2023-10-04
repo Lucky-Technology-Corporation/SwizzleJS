@@ -34,7 +34,7 @@ router.post('/apple-receipt', async (request, result) => {
 
 async function updateUserSubscription(userId, state){
   const users = db.collection('_swizzle_users');
-  await users.updateOne({ _id: UID(userId) }, { $set: { "subscription": state } }, { upsert: true });
+  await users.updateOne({ _id: UID(userId) }, { $set: { "_swizzle_subscription": state } }, { upsert: true });
   return;
 }
 

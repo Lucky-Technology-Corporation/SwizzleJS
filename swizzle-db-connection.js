@@ -19,7 +19,7 @@ const connectDB = async () => {
       const client = await MongoClient.connect(process.env.SWIZZLE_MONGODB_CONN_STRING, {
         useUnifiedTopology: true,
       });
-      _db = client.db();
+      _db = client.db("main");
       console.log('MongoDB connected…');
       return _db;
     } catch (err) {

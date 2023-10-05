@@ -2,7 +2,7 @@ const express = require('express');
 const { db } = require('./swizzle-db');
 const { UID } = require('./swizzle-db-connection');
 const router = express.Router();
-import { decodeNotificationPayload, isDecodedNotificationDataPayload, isDecodedNotificationSummaryPayload } from "app-store-server-api"
+const { decodeNotificationPayload, isDecodedNotificationDataPayload, isDecodedNotificationSummaryPayload } = require("app-store-server-api")
 
 router.post('/apple-receipt', async (request, result) => {
     try{
@@ -114,4 +114,4 @@ async function handleIncomingAppleMessage(payload, userId, productId){
       return;
 }
 
-export default router;
+module.exports = router;

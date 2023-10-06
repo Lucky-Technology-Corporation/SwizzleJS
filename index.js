@@ -4,6 +4,8 @@ const dbUtilities = require('./swizzle-db-connection');
 const authMiddleware = require('./swizzle-passport');
 
 module.exports = {
+    secrets: require('./swizzle-secrets'),
+
     authRoutes: require('./swizzle-auth'),
     dbRoutes: require('./swizzle-db-driver'),
     internalRoutes: require('./swizzle-internal'),
@@ -19,7 +21,6 @@ module.exports = {
     requiredAuthentication: authMiddleware.requiredAuthentication,
 
     db: require('./swizzle-db'),
-    secrets: require('./swizzle-secrets'),
     UID: dbUtilities.UID,
     sendNotification: notifications.sendNotification,
     saveFile: storage.saveFile,

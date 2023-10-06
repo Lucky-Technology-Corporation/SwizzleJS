@@ -16,12 +16,16 @@ const connectDB = async () => {
 
   connectionPromise = (async () => {
     try {
+      while (typeof process.env.SWIZZLE_MONGODB_CONN_STRING === 'undefined') {
+        console.log('Waiting for server to initialize...');
+        await sleep(500);
+      }
       const client = await MongoClient.connect(process.env.SWIZZLE_MONGODB_CONN_STRING, {
         tls: true,
         tlsInsecure: true,
       });
       _db = client.db("main");
-      console.log('MongoDB connected…');
+      console.log('Database connected');
       return _db;
     } catch (err) {
       console.error(err.message);
@@ -32,6 +36,7 @@ const connectDB = async () => {
   return connectionPromise;
 };
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const UID = (user) => {
   if(!user || !user.userId){

@@ -53,7 +53,7 @@ async function handleIncomingAppleMessage(payload, userId, productId){
           
         case 'DID_CHANGE_RENEWAL_STATUS':
           if (subtype === 'AUTO_RENEW_DISABLED') {
-            return updateUserSubscription(userId, 'canceled');
+            return updateUserSubscription(userId, 'churned_'+productId);
           } else if (subtype === 'AUTO_RENEW_ENABLED') {
             return updateUserSubscription(userId, 'subscribed_'+productId);
           }
@@ -95,7 +95,7 @@ async function handleIncomingAppleMessage(payload, userId, productId){
     
         case 'DID_FAIL_TO_RENEW':
           if (subtype === 'GRACE_PERIOD') {
-            return updateUserSubscription(userId, 'canceled');
+            return updateUserSubscription(userId, 'churned_'+productId);
           }
           break;
     

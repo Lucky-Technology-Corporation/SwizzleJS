@@ -2,6 +2,7 @@ const notifications = require('./swizzle-notifications');
 const storage = require('./swizzle-storage');
 const dbUtilities = require('./swizzle-db-connection');
 const authMiddleware = require('./swizzle-passport');
+const authUtils = require('./swizzle-users');
 
 module.exports = {
     secrets: require('./swizzle-secrets'),
@@ -11,11 +12,11 @@ module.exports = {
     internalRoutes: require('./swizzle-internal'),
     analyticsMiddleware: require('./swizzle-monitoring'),  
     appleRoutes: require('./swizzle-apple'),
+    authUtils: require('./swizzle-apple'),
 
     setupPassport: authMiddleware.setupPassport,
     connectDB: dbUtilities.connectDB,
     setupNotifications: notifications.setupNotifications,
-    storageRoutes: storage.storageRoutes,
 
     optionalAuthentication: authMiddleware.optionalAuthentication,
     requiredAuthentication: authMiddleware.requiredAuthentication,
@@ -26,5 +27,9 @@ module.exports = {
     saveFile: storage.saveFile,
     deleteFile: storage.deleteFile,
     getFile: storage.getFile,
+
+    getUser: authUtils.getUser,
+    getUserSubscription: authUtils.getUserSubscription,
+    editUser: authUtils.editUser,
 };
   

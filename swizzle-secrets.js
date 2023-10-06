@@ -27,7 +27,7 @@ function decrypt(privateKeyBase64, encryptedSecretBase64) {
     }
 }
 
-const initialize = async () => {
+(function initialize() {
     const superSecret = process.env.SWIZZLE_SUPER_SECRET;
     const thisEnvironment = process.env.SWIZZLE_ENV || "test";
 
@@ -42,10 +42,10 @@ const initialize = async () => {
     for(const key in secrets[thisEnvironment]){
         globalSecretObject[key] = process.env[key] = decrypt(superSecret, secrets[thisEnvironment][key]);
     }
-};
+})();
 
 const get = (key) => {
     return globalSecretObject[key];
 };
 
-module.exports = {initialize, get, globalSecretObject};
+module.exports = {get, globalSecretObject};

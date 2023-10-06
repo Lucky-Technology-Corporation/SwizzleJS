@@ -10,6 +10,7 @@ opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 opts.secretOrKey = process.env.SWIZZLE_JWT_SECRET_KEY;
 
 function setupPassport() {
+
     passport.use(new JwtStrategy(opts, async (jwt_payload, done) => {
         try {
             const users = db.collection('_swizzle_users'); 

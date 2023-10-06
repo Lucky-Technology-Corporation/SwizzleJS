@@ -17,7 +17,8 @@ const connectDB = async () => {
   connectionPromise = (async () => {
     try {
       const client = await MongoClient.connect(process.env.SWIZZLE_MONGODB_CONN_STRING, {
-        useUnifiedTopology: true,
+        tls: true,
+        tlsInsecure: true,
       });
       _db = client.db("main");
       console.log('MongoDB connected…');

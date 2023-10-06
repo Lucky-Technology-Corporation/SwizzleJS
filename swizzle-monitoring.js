@@ -4,7 +4,7 @@ const { AsyncLocalStorage } = require('async_hooks');
 require('dotenv').config();
 
 const asyncLocalStorage = new AsyncLocalStorage();
-const oldConsole = global.console;
+// const oldConsole = global.console;
 
 const saveAnalyticsAsync = async (req, res, next) => {
     const traceId = req.headers['x-injected-trace-id'];
@@ -60,11 +60,21 @@ const requestSaver = (req, res, next) => {
     });
 
     res.on('finish', async () => {
-        await saveAnalyticsAsync(req, res, next);
-        await saveLogsAsync(requestLogs, req.id);
+        try {
+            await saveAnalyticsAsync(req, res, next);
+            await saveLogsAsync(requestLogs, req.id);
+        } catch (err) {
+            console.error('Error saving analytics or logs:', err);
+        }
     });
 };
 
+const oldConsole = {
+    log: console.log.bind(console),
+    info: console.info.bind(console),
+    warn: console.warn.bind(console),
+    error: console.error.bind(console)
+};
 
 global.console = {
     log: function (...args) {
@@ -73,6 +83,8 @@ global.console = {
             const logMessage = createStructuredLog(args, id, "log");
             logs.push(logMessage);
             oldConsole.log(logMessage);
+        } else {
+            oldConsole.log(...args);
         }
     },
     info: function (...args) {
@@ -81,6 +93,8 @@ global.console = {
             const logMessage = createStructuredLog(args, id, "info");
             logs.push(logMessage);
             oldConsole.info(logMessage);
+        } else {
+            oldConsole.info(...args);
         }
     },
     warn: function (...args) {
@@ -89,6 +103,8 @@ global.console = {
             const logMessage = createStructuredLog(args, id, "warn");
             logs.push(logMessage);
             oldConsole.warn(logMessage);
+        } else {
+            oldConsole.warn(...args);
         }
     },
     error: function (...args) {
@@ -97,6 +113,8 @@ global.console = {
             const logMessage = createStructuredLog(args, id, "error");
             logs.push(logMessage);
             oldConsole.error(logMessage);
+        } else {
+            oldConsole.error(...args);
         }
     }
 };

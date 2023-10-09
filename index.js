@@ -12,7 +12,7 @@ module.exports = {
     internalRoutes: require('./swizzle-internal'),
     analyticsMiddleware: require('./swizzle-monitoring'),  
     appleRoutes: require('./swizzle-apple'),
-    authUtils: require('./swizzle-apple'),
+    authUtils: require('./swizzle-users'),
 
     setupPassport: authMiddleware.setupPassport,
     connectDB: dbUtilities.connectDB,
@@ -27,6 +27,8 @@ module.exports = {
     saveFile: storage.saveFile,
     deleteFile: storage.deleteFile,
     getFile: storage.getFile,
+
+    storageRoutes: storage.storageRoutes,
 
     getUser: authUtils.getUser,
     getUserSubscription: authUtils.getUserSubscription,

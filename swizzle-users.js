@@ -23,7 +23,7 @@ function getUserSubscription(uid) {
             willRenew: false,
             productId: user.subscription.split("_")[1]
         }
-    } else if(user.subscription && user.subscription.contains("churned__")){
+    } else if(user.subscription && user.subscription.contains("churned_")){
         return {
             isSubscribed: true,
             willRenew: false,
@@ -35,6 +35,20 @@ function getUserSubscription(uid) {
             willRenew: false,
             productId: null
         }
+    }
+}
+
+async function setUserSubscription(uid, productId, isSubscribed, willRenew) {
+    try{
+        const uidObject = getUidFromInput(uid);
+        const state = isSubscribed ? (willRenew ? "subscribed" : "churned") : "canceled"
+        const subscriptionStringState = state + "_" + productId
+        const users = db.collection('_swizzle_users');
+        await users.updateOne({ _id: uidObject }, { $set: { "subscription": subscriptionStringState } }, { upsert: true });
+        return true
+    } catch(err){
+        console.log(err)
+        return false
     }
 }
 
@@ -50,4 +64,4 @@ function editUser(uid, newUserProperties) {
     return db.collection('_swizzle_users').updateOne({ _id: uidObject }, { $set: filteredProperties }, { upsert: true });
 }
 
-module.exports = { getUser, getUserSubscription, editUser };
+module.exports = { getUser, getUserSubscription, editUser, setUserSubscription };

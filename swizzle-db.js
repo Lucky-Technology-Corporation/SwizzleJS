@@ -4,24 +4,16 @@ let _db;
 
 const init = async () => {
   try {
+    if(_db){
+      return _db;
+    }
     _db = await connectDB();
+    return _db
   } catch (err) {
     console.error('Failed to connect to DB:', err);
   }
 };
 
+init().catch(err => console.error(err));  // Initialize at the time of require
 
-Object.defineProperty(module.exports, 'db', {
-  get: () => {
-    if (!_db) {
-      connectDB().then(connection => {
-        _db = connection;
-      }).catch(err => {
-        console.error('Failed to connect to DB:', err);
-      });
-    }
-    return _db;
-  }
-});
-
-module.exports.init = init;
+module.exports = { db: _db, init };

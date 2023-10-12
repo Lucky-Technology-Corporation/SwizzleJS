@@ -3,6 +3,7 @@ const storage = require('./swizzle-storage');
 const dbUtilities = require('./swizzle-db-connection');
 const authMiddleware = require('./swizzle-passport');
 const authUtils = require('./swizzle-users');
+const {db, init} = require('./swizzle-db');
 
 module.exports = {
     secrets: require('./swizzle-secrets'),
@@ -21,7 +22,8 @@ module.exports = {
     optionalAuthentication: authMiddleware.optionalAuthentication,
     requiredAuthentication: authMiddleware.requiredAuthentication,
 
-    db: require('./swizzle-db'),
+    initDb: init,
+    db: db,
     UID: dbUtilities.UID,
     sendNotification: notifications.sendNotification,
     saveFile: storage.saveFile,

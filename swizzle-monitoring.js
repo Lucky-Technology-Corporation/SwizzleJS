@@ -1,12 +1,10 @@
 const { v4: uuidv4 } = require('uuid');
-const { db } = require('./swizzle-db');
 const { AsyncLocalStorage } = require('async_hooks');
 require('dotenv').config();
 
 const asyncLocalStorage = new AsyncLocalStorage();
-// const oldConsole = global.console;
 
-const saveAnalyticsAsync = async (req, res, next) => {
+const saveAnalyticsAsync = async (db, req, res, next) => {
     const traceId = req.headers['x-injected-trace-id'];
     const environment = process.env.SWIZZLE_ENV || "test";
     const userId = req.user ? req.user.userId : null;
@@ -40,7 +38,7 @@ function createStructuredLog(args, reqId, level) {
     return JSON.stringify(log)
 }
 
-const saveLogsAsync = async (logs, reqId) => {
+const saveLogsAsync = async (db, logs, reqId) => {
     const analytics = db.collection('_swizzle_analytics');
     return analytics.updateOne(
         { traceId: reqId },
@@ -49,7 +47,7 @@ const saveLogsAsync = async (logs, reqId) => {
     );
 };
 
-const requestSaver = (req, res, next) => {
+const analyticsMiddleware = (db) => (req, res, next) => {
     req.headers['x-injected-trace-id'] = uuidv4();
     req.id = req.headers['x-injected-trace-id'];
     req.start = new Date().getTime();
@@ -61,8 +59,8 @@ const requestSaver = (req, res, next) => {
 
     res.on('finish', async () => {
         try {
-            await saveAnalyticsAsync(req, res, next);
-            await saveLogsAsync(requestLogs, req.id);
+            await saveAnalyticsAsync(db, req, res, next);
+            await saveLogsAsync(db, requestLogs, req.id);
         } catch (err) {
             console.error('Error saving analytics or logs:', err);
         }
@@ -119,4 +117,4 @@ global.console = {
     }
 };
 
-module.exports = requestSaver;
+module.exports = analyticsMiddleware;

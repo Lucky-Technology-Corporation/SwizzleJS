@@ -14,6 +14,21 @@ const init = async () => {
   }
 };
 
-init().catch(err => console.error(err));  // Initialize at the time of require
+(async () => {
+  try {
+    await init();
+  } catch (err) {
+    console.error(err);
+  }
+})();
 
-module.exports = { db: _db, init };
+const dbProxy = new Proxy({}, {
+  get: function(target, name) {
+    if (!_db) {
+      throw new Error('DB not initialized');
+    }
+    return _db[name];
+  }
+});
+
+module.exports = { db: dbProxy, init };

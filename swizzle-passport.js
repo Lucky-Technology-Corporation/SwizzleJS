@@ -8,9 +8,10 @@ const opts = {}
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 opts.secretOrKey = process.env.SWIZZLE_JWT_SECRET_KEY;
 
-function setupPassport(db) {
+async function setupPassport(db) {
 
     passport.use(new JwtStrategy(opts, async (jwt_payload, done) => {
+        
         if (!jwt_payload || !jwt_payload.userId) {
             return done(null, false);
         }

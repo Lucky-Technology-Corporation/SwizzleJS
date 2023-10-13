@@ -1,7 +1,6 @@
 const passport = require('passport');
 const JwtStrategy = require('passport-jwt').Strategy;
 const ExtractJwt = require('passport-jwt').ExtractJwt;
-const { db } = require('./swizzle-db');
 const mongodb = require('mongodb');
 require('dotenv').config();
 
@@ -9,7 +8,7 @@ const opts = {}
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 opts.secretOrKey = process.env.SWIZZLE_JWT_SECRET_KEY;
 
-function setupPassport() {
+function setupPassport(db) {
 
     passport.use(new JwtStrategy(opts, async (jwt_payload, done) => {
         try {

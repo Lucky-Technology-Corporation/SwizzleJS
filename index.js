@@ -8,11 +8,9 @@ const {db, init} = require('./swizzle-db');
 module.exports = {
     secrets: require('./swizzle-secrets'),
 
-    authRoutes: require('./swizzle-auth'),
     dbRoutes: require('./swizzle-db-driver'),
     internalRoutes: require('./swizzle-internal'),
     analyticsMiddleware: require('./swizzle-monitoring'),  
-    appleRoutes: require('./swizzle-apple'),
     authUtils: require('./swizzle-users'),
 
     setupPassport: authMiddleware.setupPassport,

@@ -39,8 +39,14 @@ const connectDB = async () => {
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const UID = (user) => {
-  if(!user || !user.userId){
+  if(!user || !user.userId || !user._id){
     return null;
+  }
+  if(typeof user === 'string'){
+    return new ObjectId(user);
+  }
+  if(user._id){
+    return user._id;
   }
   return new ObjectId(user.userId);
 };

@@ -49,7 +49,7 @@ async function sendNotification(user, title, body, badge) {
         notification.badge = badgeNumber;
     }
 
-    sendNotificationHelper(user, notification);
+    return sendNotificationHelper(user, notification);
 }
 
 async function sendNotificationHelper(user, notification) {

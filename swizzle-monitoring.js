@@ -18,6 +18,7 @@ const saveAnalyticsAsync = async (db, req, res, next) => {
     const request = {
         "query": req.query,
         "body": req.body,
+        "headers": req.headers,
     }
     const response = {
         "body": res.body,

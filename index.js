@@ -36,5 +36,7 @@ module.exports = {
     getUserSubscription: authUtils.getUserSubscription,
     editUser: authUtils.editUser,
     setUserSubscription: authUtils.setUserSubscription,
+    createUser: authUtils.createUser,
+    searchUsers: authUtils.searchUsers,
 };
   

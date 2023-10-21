@@ -9,23 +9,18 @@ const router = express.Router();
 //URL to access files
 //If public, then it redirects to the google storage URL
 //If private, it checks the user and then redirects to a weeklong signed URL
-router.get('/*key', optionalAuthentication, async (request, result) => {
+router.get('/:key', optionalAuthentication, async (request, result) => {
     try {
       const fileName = request.params.key;
       const lastIndex = fileName.lastIndexOf('.');
       const nameWithoutExtension = lastIndex !== -1 ? fileName.substring(0, lastIndex) : fileName;
 
-      //Get document
+      const document = await db.collection('_swizzle_storage').findOne({ _id: new ObjectId(nameWithoutExtension) });
       
-      const document = await db
-        .collection('_swizzle_storage')
-        .findOne({ _id: ObjectId(nameWithoutExtension) });
-
-      if (!document) {
-        return result.status(404).json({ error: 'No document found' });
+      if(!document){
+        return result.status(404).json({ error: 'File not found' });
       }
 
-      //Check access
       if (
         document.access === 'private' &&
         document.userId &&
@@ -35,10 +30,10 @@ router.get('/*key', optionalAuthentication, async (request, result) => {
           .status(401)
           .json({ error: 'You do not have access to this file' });
       }
+
+      const url = await getItem(document._id + "." + document.fileExtension, document.access)
+      return result.redirect(url)
   
-      //Return redirect to file URL
-      const bucket = document.access;
-      return result.redirect(getItem(fileName, bucket));
     } catch (error) {
       console.error(error);
       return result.status(500).json({ error: error });
@@ -69,6 +64,32 @@ router.get('/*key', optionalAuthentication, async (request, result) => {
     }
   };
 
+  async function setItem(bucketType, filename, fileData) {
+    const projectName = process.env.SWIZZLE_PROJECT_NAME || 'swizzle';
+    const environment = process.env.SWIZZLE_ENV || 'test';
+    const fullBucketUrl = `${projectName}-${bucketType}-data-${environment}`;
+    const bucket = storage.bucket(fullBucketUrl);
+    const file = bucket.file(filename);
+  
+    const stream = file.createWriteStream({
+      metadata: {
+        contentType: 'auto', // automatically detect the file's MIME type
+      },
+    });
+  
+    return new Promise((resolve, reject) => {
+      stream.on('error', (err) => {
+        reject(err);
+      });
+  
+      stream.on('finish', () => {
+        resolve();
+      });
+  
+      stream.end(fileData);
+    });
+  }
+  
 
   /*
   usage:
@@ -78,18 +99,28 @@ router.get('/*key', optionalAuthentication, async (request, result) => {
   Returns the signed file URL if found overriding the access level.
   */
   async function getFile(filename){
+    
     const isUrl = filename.startsWith('http') || filename.startsWith('/swizzle/storage');
+    const isMongoObjectId = ObjectId.isValid(filename.split(".")[0]);
+    var document = null;
+
     if(isUrl){
       const fileName = filename.substring(filename.lastIndexOf('/') + 1);
       const nameWithoutExtension = fileName.substring(0, fileName.lastIndexOf('.'));
-      const document = await db.collection('_swizzle_storage').findOne({ _id: ObjectId(nameWithoutExtension) });
-      return getItem(document._id + "." + document.fileExtension, document.access)
+      document = await db.collection('_swizzle_storage').findOne({ _id: new ObjectId(nameWithoutExtension) });
+    } else if(isMongoObjectId){
+      const fileName = filename.substring(filename.lastIndexOf('/') + 1);
+      const nameWithoutExtension = fileName.substring(0, fileName.lastIndexOf('.'));
+      document = await db.collection('_swizzle_storage').findOne({ _id: new ObjectId(nameWithoutExtension) });
     } else{
-      const document = await db
-          .collection('_swizzle_storage')
-          .findOne({ fileName: filename });
-      return getItem(document._id + "." + document.fileExtension, document.access)
+      document = await db.collection('_swizzle_storage').findOne({ fileName: filename });
     }
+
+    if(!document){
+      return null;
+    }
+
+    return getItem(document._id + "." + document.fileExtension, document.access)
   }
   
 
@@ -132,36 +163,11 @@ router.get('/*key', optionalAuthentication, async (request, result) => {
     }
   }
   
-  async function setItem(bucketType, filename, fileData) {
-    const projectName = process.env.SWIZZLE_PROJECT_NAME || 'swizzle';
-    const environment = process.env.SWIZZLE_ENV || 'test';
-    const fullBucketUrl = `${projectName}-${bucketType}-data-${environment}`;
-    const bucket = storage.bucket(fullBucketUrl);
-    const file = bucket.file(filename);
-  
-    const stream = file.createWriteStream({
-      metadata: {
-        contentType: 'auto', // automatically detect the file's MIME type
-      },
-    });
-  
-    return new Promise((resolve, reject) => {
-      stream.on('error', (err) => {
-        reject(err);
-      });
-  
-      stream.on('finish', () => {
-        resolve();
-      });
-  
-      stream.end(fileData);
-    });
-  }
-  
+
   async function deleteFile(fileName) {
     try {        
         const nameWithoutExtension = lastIndex !== -1 ? fileName.substring(0, lastIndex) : fileName;
-        const dbDocument = await db.collection("_swizzle_storage").findOne({_id: ObjectId(nameWithoutExtension)});
+        const dbDocument = await db.collection("_swizzle_storage").findOne({_id: new ObjectId(nameWithoutExtension)});
         
 
         return true

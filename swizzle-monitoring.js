@@ -9,7 +9,7 @@ const saveAnalyticsAsync = async (db, req, res, next) => {
     const environment = process.env.SWIZZLE_ENV || "test";
     const userId = req.user ? req.user.userId : null;
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    const url = req.url;
+    const url = req.originalUrl || req.url;
     const method = req.method;
     const userAgent = req.headers['user-agent'];
     const headers = req.headers;

@@ -5,6 +5,11 @@ require('dotenv').config();
 const asyncLocalStorage = new AsyncLocalStorage();
 
 const saveAnalyticsAsync = async (db, req, res, next) => {
+    const referer = req.headers['referer'] || req.headers['referrer'];
+    if(referer == "https://swizzle-internal.com/" || referer == "https://app.swizzle.co/" || referer == "http://localhost:8080/"){
+        return;
+    }
+
     const traceId = req.headers['x-injected-trace-id'];
     const environment = process.env.SWIZZLE_ENV || "test";
     const userId = req.user ? req.user.userId : null;

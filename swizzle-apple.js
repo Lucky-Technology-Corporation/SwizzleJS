@@ -114,4 +114,44 @@ async function handleIncomingAppleMessage(payload, userId, productId){
       return;
 }
 
+async function getUserSubscription(uid) {
+  const uidObject = getUidFromInput(uid);
+  const user = await db.collection('_swizzle_users').findOne({ _id: uidObject });
+  if(user.subscription && user.subscription.contains("subscribed_")){
+      return {
+          isSubscribed: true,
+          willRenew: false,
+          productId: user.subscription.split("_")[1]
+      }
+  } else if(user.subscription && user.subscription.contains("churned_")){
+      return {
+          isSubscribed: true,
+          willRenew: false,
+          productId: user.subscription.split("_")[1]
+      }
+  } else{
+      return {
+          isSubscribed: false,
+          willRenew: false,
+          productId: null
+      }
+  }
+}
+
+async function setUserSubscription(uid, productId, isSubscribed, willRenew) {
+  try{
+      const uidObject = UID(uid);
+      const state = isSubscribed ? (willRenew ? "subscribed" : "churned") : "canceled"
+      const subscriptionStringState = state + "_" + productId
+      const users = db.collection('_swizzle_users');
+      var updatedUser = await users.updateOne({ _id: uidObject }, { $set: { "subscription": subscriptionStringState } }, { upsert: true, returnDocument: 'after' });
+      updatedUser = addUserIdToUser(updatedUser)
+      return updatedUser;
+  } catch(err){
+      console.log(err)
+      return false
+  }
+}
+
+
 module.exports = router;

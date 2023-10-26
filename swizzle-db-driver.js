@@ -4,8 +4,9 @@ const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const mongodb = require('mongodb');
 const { db } = require('./swizzle-db');
+const { requiredAuthentication } = require('.');
 
-router.get('/:key', passport.authenticate('jwt', { session: false }), async (request, result) => {
+router.get('/:key', requiredAuthentication, async (request, result) => {
     try{
         const key = request.params.key;
         const userId = request.user.userId;
@@ -28,7 +29,7 @@ router.get('/:key', passport.authenticate('jwt', { session: false }), async (req
 });
 
 
-router.post('/:key', passport.authenticate('jwt', { session: false }), async (request, result) => {
+router.post('/:key', requiredAuthentication, async (request, result) => {
     try{
         const key = request.params.key;
         const userId = request.user.userId;

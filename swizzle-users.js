@@ -18,43 +18,9 @@ async function searchUsers(query) {
     return users;
 }
 
-async function getUserSubscription(uid) {
-    const uidObject = getUidFromInput(uid);
-    const user = await db.collection('_swizzle_users').findOne({ _id: uidObject });
-    if(user.subscription && user.subscription.contains("subscribed_")){
-        return {
-            isSubscribed: true,
-            willRenew: false,
-            productId: user.subscription.split("_")[1]
-        }
-    } else if(user.subscription && user.subscription.contains("churned_")){
-        return {
-            isSubscribed: true,
-            willRenew: false,
-            productId: user.subscription.split("_")[1]
-        }
-    } else{
-        return {
-            isSubscribed: false,
-            willRenew: false,
-            productId: null
-        }
-    }
-}
-
-async function setUserSubscription(uid, productId, isSubscribed, willRenew) {
-    try{
-        const uidObject = UID(uid);
-        const state = isSubscribed ? (willRenew ? "subscribed" : "churned") : "canceled"
-        const subscriptionStringState = state + "_" + productId
-        const users = db.collection('_swizzle_users');
-        var updatedUser = await users.updateOne({ _id: uidObject }, { $set: { "subscription": subscriptionStringState } }, { upsert: true, returnDocument: 'after' });
-        updatedUser = addUserIdToUser(updatedUser)
-        return updatedUser;
-    } catch(err){
-        console.log(err)
-        return false
-    }
+function getAccessToken(uid, hours){
+    var safeHours = hours || 24
+    return jwt.sign({ userId: uid }, process.env.SWIZZLE_JWT_SECRET_KEY, { expiresIn: (safeHours+'h') });
 }
 
 async function editUser(uid, newUserProperties) {
@@ -63,9 +29,7 @@ async function editUser(uid, newUserProperties) {
     delete filteredProperties._id
     delete filteredProperties.createdAt
     filteredProperties.updatedAt = new Date()
-    delete filteredProperties.isAnonymous
     delete filteredProperties.lastLoginIp
-    delete filteredProperties.subscription
     var updatedUser = db.collection('_swizzle_users').updateOne({ _id: uidObject }, { $set: filteredProperties }, { upsert: true, returnDocument: 'after' });
     updatedUser = addUserIdToUser(updatedUser)
     return updatedUser;
@@ -83,6 +47,7 @@ async function createUser(properties, request){
     if(ip){
         filteredProperties.lastLoginIp = ip
     }
+    filteredProperties.subscription = null
     const users = db.collection('_swizzle_users');  
     const result = await users.insertOne(filteredProperties);
     var newUser = result.ops[0]
@@ -90,4 +55,4 @@ async function createUser(properties, request){
     return newUser;
 }
 
-module.exports = { getUser, getUserSubscription, editUser, setUserSubscription, createUser, searchUsers };
+module.exports = { getUser, getUserSubscription, editUser, setUserSubscription, createUser, searchUsers, getAccessToken };

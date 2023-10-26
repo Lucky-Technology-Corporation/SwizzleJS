@@ -90,11 +90,28 @@ router.get('/:key', optionalAuthentication, async (request, result) => {
     });
   }
   
+  async function deleteItem(bucketType, filename) {
+    const projectName = process.env.SWIZZLE_PROJECT_NAME || 'swizzle';
+    const environment = process.env.SWIZZLE_ENV || 'test';
+    const fullBucketUrl = `${projectName}-${bucketType}-data-${environment}`;
+    const bucket = storage.bucket(fullBucketUrl);
+    const file = bucket.file(filename);
+  
+    try {
+      await file.delete();
+      return true
+    } catch (error) {
+      console.error(`Failed to delete file ${filename} from bucket ${fullBucketUrl}.`, error);
+      return false
+    }
+  }
+  
 
   /*
   usage:
   const file = await getFile('filename.txt');
   const file = await getFile('https://your-domain.com/swizzle/storage/507f1f77bcf86cd799439011.txt')
+  const file = await getFile('/swizzle/storage/507f1f77bcf86cd799439011.txt')
 
   Returns the signed file URL if found overriding the access level.
   */
@@ -104,19 +121,16 @@ router.get('/:key', optionalAuthentication, async (request, result) => {
     const isMongoObjectId = ObjectId.isValid(filename.split(".")[0]);
     var document = null;
 
-    if(isUrl){
+    if (isUrl || isMongoObjectId) {
       const fileName = filename.substring(filename.lastIndexOf('/') + 1);
-      const nameWithoutExtension = fileName.substring(0, fileName.lastIndexOf('.'));
+      var nameWithoutExtension = fileName.substring(0, fileName.lastIndexOf('.'));
+      if(nameWithoutExtension == ""){ nameWithoutExtension = fileName }
       document = await db.collection('_swizzle_storage').findOne({ _id: new ObjectId(nameWithoutExtension) });
-    } else if(isMongoObjectId){
-      const fileName = filename.substring(filename.lastIndexOf('/') + 1);
-      const nameWithoutExtension = fileName.substring(0, fileName.lastIndexOf('.'));
-      document = await db.collection('_swizzle_storage').findOne({ _id: new ObjectId(nameWithoutExtension) });
-    } else{
+    } else {
       document = await db.collection('_swizzle_storage').findOne({ fileName: filename });
     }
 
-    if(!document){
+    if (!document) {
       return null;
     }
 
@@ -127,28 +141,20 @@ router.get('/:key', optionalAuthentication, async (request, result) => {
   /* 
   usage: 
   await saveFile('destination/path/in/bucket.txt', data);
-  await saveFile('destination/path/in/bucket.txt', data, userId);
-  
-  When a userId is provided, the file is added to the private bucket.
+  await saveFile('destination/path/in/bucket.txt', data, true); //private, must be signed with getFile to access
   */
-  async function saveFile(fileName, fileData, ownerUserId) {
+  async function saveFile(fileName, fileData, isPrivate = false) {
     try {
-      var bucket = 'public';
-      var userObjectId = null;
-      if (ownerUserId) {
-        bucket = 'private';
-        userObjectId = new mongodb.ObjectId(ownerUserId);
-      }
-  
-      
+      var bucket = isPrivate ? 'private' : 'public';
+
       const fileExtension = fileName.substring(filename.lastIndexOf('.') + 1);  
+
       const document = {
-        userId: userObjectId,
         fileName: fileName,
         fileExtension: fileExtension,
         createdAt: new Date(),
         updatedAt: new Date(),
-        access: request.body.access || 'public',
+        access: isPrivate ? "private" : 'public',
       };
   
       const result = await db.collection('_swizzle_storage').insertOne(document);
@@ -164,13 +170,28 @@ router.get('/:key', optionalAuthentication, async (request, result) => {
   }
   
 
-  async function deleteFile(fileName) {
+  async function deleteFile(filename) {
     try {        
-        const nameWithoutExtension = lastIndex !== -1 ? fileName.substring(0, lastIndex) : fileName;
-        const dbDocument = await db.collection("_swizzle_storage").findOne({_id: new ObjectId(nameWithoutExtension)});
-        
+      const isUrl = filename.startsWith('http') || filename.startsWith('/swizzle/storage');
+      const isMongoObjectId = ObjectId.isValid(filename.split(".")[0]);
+      var document = null;
 
-        return true
+      if (isUrl || isMongoObjectId) {
+        const fileName = filename.substring(filename.lastIndexOf('/') + 1);
+        var nameWithoutExtension = fileName.substring(0, fileName.lastIndexOf('.'));
+        if(nameWithoutExtension == ""){ nameWithoutExtension = fileName }
+        document = await db.collection('_swizzle_storage').findOne({ _id: new ObjectId(nameWithoutExtension) });
+      } else {
+        document = await db.collection('_swizzle_storage').findOne({ fileName: filename });
+      }
+    
+      if(!document){
+        return false
+      }
+
+      await db.collection("_swizzle_storage").deleteOne({_id: document._id})
+      const result = await deleteItem(document.access, document._id + "." + document.fileExtension)
+      return result
     } catch (error) {
         console.error(error);
         return false

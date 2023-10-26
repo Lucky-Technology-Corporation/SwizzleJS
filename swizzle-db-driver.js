@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const mongodb = require('mongodb');
 const { db } = require('./swizzle-db');
-const { requiredAuthentication } = require('.');
+const { requiredAuthentication } = require('./swizzle-passport');
 
 router.get('/:key', requiredAuthentication, async (request, result) => {
     try{

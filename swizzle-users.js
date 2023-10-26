@@ -55,4 +55,4 @@ async function createUser(properties, request){
     return newUser;
 }
 
-module.exports = { getUser, getUserSubscription, editUser, setUserSubscription, createUser, searchUsers, getAccessToken };
+module.exports = { getUser, editUser, createUser, searchUsers, getAccessToken };

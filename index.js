@@ -34,6 +34,6 @@ module.exports = {
     editUser: authUtils.editUser,
     createUser: authUtils.createUser,
     searchUsers: authUtils.searchUsers,
-    getAccessToken: authUtils.getAccessToken,
+    signTokens: authUtils.signTokens,
 };
   

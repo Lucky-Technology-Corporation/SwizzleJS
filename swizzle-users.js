@@ -18,9 +18,11 @@ async function searchUsers(query) {
     return users;
 }
 
-function getAccessToken(uid, hours){
+function signTokens(uid, hours){
     var safeHours = hours || 24
-    return jwt.sign({ userId: uid }, process.env.SWIZZLE_JWT_SECRET_KEY, { expiresIn: (safeHours+'h') });
+    const accessToken = jwt.sign({ userId: uid }, process.env.SWIZZLE_JWT_SECRET_KEY, { expiresIn: safeHours+'h' });
+    const refreshToken = jwt.sign({ userId: uid }, process.env.SWIZZLE_REFRESH_JWT_SECRET_KEY);
+    return { accessToken, refreshToken }
 }
 
 async function editUser(uid, newUserProperties) {
@@ -55,4 +57,4 @@ async function createUser(properties, request){
     return newUser;
 }
 
-module.exports = { getUser, editUser, createUser, searchUsers, getAccessToken };
+module.exports = { getUser, editUser, createUser, searchUsers, signTokens };

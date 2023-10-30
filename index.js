@@ -25,7 +25,9 @@ module.exports = {
     sendNotification: notifications.sendNotification,
     saveFile: storage.saveFile,
     deleteFile: storage.deleteFile,
-    getFile: storage.getFile,
+    getFileUrl: storage.getFileUrl,
+    addUserToFile: storage.addUserToFile,
+    removeUserFromFile: storage.removeUserFromFile,
 
     storageRoutes: storage.storageRoutes,
 

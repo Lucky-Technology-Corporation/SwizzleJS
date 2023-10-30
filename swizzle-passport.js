@@ -5,7 +5,16 @@ const mongodb = require('mongodb');
 require('dotenv').config();
 
 const opts = {}
-opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
+opts.jwtFromRequest = function (req) {
+    let token = null;
+    if (req && req.headers.authorization) {
+      token = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
+    }
+    if (!token && req && req.query && req.query.token) {
+      token = req.query.token;
+    }
+    return token;
+};
 opts.secretOrKey = process.env.SWIZZLE_JWT_SECRET_KEY;
 
 async function setupPassport(db) {

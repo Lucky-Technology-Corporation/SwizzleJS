@@ -10,35 +10,33 @@ const router = express.Router();
 //If public, then it redirects to the google storage URL
 //If private, it checks the user and then redirects to a weeklong signed URL
 router.get('/:key', optionalAuthentication, async (request, result) => {
-    try {
-      const fileName = request.params.key;
-      const lastIndex = fileName.lastIndexOf('.');
-      const nameWithoutExtension = lastIndex !== -1 ? fileName.substring(0, lastIndex) : fileName;
+  try {
+    const fileName = request.params.key;
+    const lastIndex = fileName.lastIndexOf('.');
+    const nameWithoutExtension = lastIndex !== -1 ? fileName.substring(0, lastIndex) : fileName;
 
-      const document = await db.collection('_swizzle_storage').findOne({ _id: new ObjectId(nameWithoutExtension) });
-      
-      if(!document){
-        return result.status(404).json({ error: 'File not found' });
-      }
+    const document = await db.collection('_swizzle_storage').findOne({ _id: new ObjectId(nameWithoutExtension) });
+    
+    if(!document){
+      return result.status(404).json({ error: 'File not found' });
+    }
 
-      if (
-        document.access === 'private' &&
-        document.userId &&
-        document.userId !== request.user.id
-      ) {
+    if (document.access === 'private') {
+      if(!(document.allowedUsers || []).includes(request.user.userId)){ //if the user is not in the list of allowed users
         return result
           .status(401)
           .json({ error: 'You do not have access to this file' });
       }
-
-      const url = await getItem(document._id + "." + document.fileExtension, document.access)
-      return result.redirect(url)
-  
-    } catch (error) {
-      console.error(error);
-      return result.status(500).json({ error: error });
     }
-  });
+
+    const url = await getItem(document._id + "." + document.fileExtension, document.access)
+    return result.redirect(url)
+
+  } catch (error) {
+    console.error(error);
+    return result.status(500).json({ error: error });
+  }
+});
   
   const getItem = (filename, bucket) => {
     const environment = process.env.SWIZZLE_ENV || 'test';
@@ -54,7 +52,7 @@ router.get('/:key', optionalAuthentication, async (request, result) => {
         const file = bucket.file(filename);
         const config = {
           action: 'read',
-          expires: new Date().getTime() + 1000 * 60 * 60 * 24 * 7, // 1 week
+          expires: new Date().getTime() + 1000 * 60 * 60 * 24, // 24 hours
         };
         return file.getSignedUrl(config);
       }
@@ -106,6 +104,53 @@ router.get('/:key', optionalAuthentication, async (request, result) => {
     }
   }
   
+  /*
+  usage:
+  const success = await addUserToFile(url, uid);
+
+  Returns a success boolean.
+  */
+  async function addUserToFile(url, userId){
+    try{
+      const fileName = url.substring(url.lastIndexOf('/') + 1);
+      var nameWithoutExtension = fileName.substring(0, fileName.lastIndexOf('.'));
+      if(nameWithoutExtension == ""){ nameWithoutExtension = fileName }
+      var document = await db.collection('_swizzle_storage').updateOne({ _id: new ObjectId(nameWithoutExtension) }, { $addToSet: { allowedUsers: userId } });
+
+      if (document.modifiedCount === 0) {
+        return false;
+      }  
+
+      return true
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
+
+  /*
+  usage:
+  const success = await removeUserFromFile(url, uid);
+
+  Returns a success boolean.
+  */
+  async function removeUserFromFile(url, userId){
+    try{
+      const fileName = url.substring(url.lastIndexOf('/') + 1);
+      var nameWithoutExtension = fileName.substring(0, fileName.lastIndexOf('.'));
+      if(nameWithoutExtension == ""){ nameWithoutExtension = fileName }
+      var document = await db.collection('_swizzle_storage').updateOne({ _id: new ObjectId(nameWithoutExtension) }, { $pull: { allowedUsers: userId } });
+
+      if (document.modifiedCount === 0) {
+        return false;
+      }  
+
+      return true
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
 
   /*
   usage:
@@ -115,7 +160,7 @@ router.get('/:key', optionalAuthentication, async (request, result) => {
 
   Returns the signed file URL if found overriding the access level.
   */
-  async function getFile(filename){
+  async function getFileUrl(filename){
     
     const isUrl = filename.startsWith('http') || filename.startsWith('/swizzle/storage');
     const isMongoObjectId = ObjectId.isValid(filename.split(".")[0]);
@@ -143,7 +188,7 @@ router.get('/:key', optionalAuthentication, async (request, result) => {
   await saveFile('destination/path/in/bucket.txt', data);
   await saveFile('destination/path/in/bucket.txt', data, true); //private, must be signed with getFile to access
   */
-  async function saveFile(fileName, fileData, isPrivate = false) {
+  async function saveFile(fileName, fileData, isPrivate = false, allowedUsers = []) {
     try {
       var bucket = isPrivate ? 'private' : 'public';
 
@@ -155,13 +200,19 @@ router.get('/:key', optionalAuthentication, async (request, result) => {
         createdAt: new Date(),
         updatedAt: new Date(),
         access: isPrivate ? "private" : 'public',
+        allowedUsers: allowedUsers,
       };
   
       const result = await db.collection('_swizzle_storage').insertOne(document);
 
       await setItem(bucket, result.insertedId + "." + fileExtension, fileData);
       
-      return "/swizzle/storage/" + result.insertedId + "." + fileExtension;
+      const domain = environment == "test" ? "swizzle-test.com" : "swizzle-app.com"
+      const fullDomain = "https://api." + projectName + "." + domain
+
+      const relativePath = "/swizzle/storage/" + result.insertedId + "." + fileExtension;
+
+      return fullDomain + relativePath
 
     } catch (error) {
       console.error(error);
@@ -193,8 +244,8 @@ router.get('/:key', optionalAuthentication, async (request, result) => {
       const result = await deleteItem(document.access, document._id + "." + document.fileExtension)
       return result
     } catch (error) {
-        console.error(error);
-        return false
+      console.error(error);
+      return false
     }
   }
   
@@ -202,6 +253,8 @@ router.get('/:key', optionalAuthentication, async (request, result) => {
     storageRoutes: router,
     saveFile: saveFile,
     deleteFile: deleteFile,
-    getFile: getFile,
+    getFileUrl: getFileUrl,
+    addUserToFile: addUserToFile,
+    removeUserFromFile: removeUserFromFile,
   };
   

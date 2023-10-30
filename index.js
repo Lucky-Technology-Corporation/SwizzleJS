@@ -8,7 +8,6 @@ const {db, init} = require('./swizzle-db');
 module.exports = {
     secrets: require('./swizzle-secrets'),
 
-    dbRoutes: require('./swizzle-db-driver'),
     internalRoutes: require('./swizzle-internal'),
     analyticsMiddleware: require('./swizzle-monitoring'),  
     authUtils: require('./swizzle-users'),

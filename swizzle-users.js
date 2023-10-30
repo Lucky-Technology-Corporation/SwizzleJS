@@ -25,6 +25,17 @@ function signTokens(uid, hours){
     return { accessToken, refreshToken }
 }
 
+function refreshTokens(refreshToken){
+    try {
+        const { userId } = jwt.verify(refreshToken, process.env.SWIZZLE_REFRESH_JWT_SECRET_KEY);
+        const { accessToken, refreshToken } = signTokens(userId)
+        return { accessToken, refreshToken }
+    } catch (err) {
+        console.log(err)
+        return null
+    }
+}
+
 async function editUser(uid, newUserProperties) {
     const uidObject = UID(uid);
     var filteredProperties = newUserProperties
@@ -57,4 +68,4 @@ async function createUser(properties, request){
     return newUser;
 }
 
-module.exports = { getUser, editUser, createUser, searchUsers, signTokens };
+module.exports = { getUser, editUser, createUser, searchUsers, signTokens, refreshTokens };

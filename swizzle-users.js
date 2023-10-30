@@ -25,9 +25,9 @@ function signTokens(uid, hours){
     return { accessToken, refreshToken }
 }
 
-function refreshTokens(refreshToken){
+function refreshTokens(oldRefreshToken){
     try {
-        const { userId } = jwt.verify(refreshToken, process.env.SWIZZLE_REFRESH_JWT_SECRET_KEY);
+        const { userId } = jwt.verify(oldRefreshToken, process.env.SWIZZLE_REFRESH_JWT_SECRET_KEY);
         const { accessToken, refreshToken } = signTokens(userId)
         return { accessToken, refreshToken }
     } catch (err) {

@@ -21,7 +21,7 @@ async function searchUsers(query) {
 function signTokens(uid, hours){
     try {
         var safeHours = hours || 24
-        const accessToken = jwt.sign({ userId: uid }, process.env.SWIZZLE_JWT_SECRET_KEY, { expiresIn: safeHours+'h' });
+        const accessToken = jwt.sign({ userId: uid }, process.env.SWIZZLE_JWT_SECRET_KEY, { expiresIn: `${hours}h` });
         const refreshToken = jwt.sign({ userId: uid }, process.env.SWIZZLE_REFRESH_JWT_SECRET_KEY);
         return { accessToken, refreshToken }
     } catch (err) {

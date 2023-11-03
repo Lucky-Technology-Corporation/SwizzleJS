@@ -1,3 +1,4 @@
+import { initializeSecrets } from './swizzle-secrets';
 import { dbProxy, init } from './swizzle-db';
 import { connectDB, UID} from './swizzle-db-connection';
 import { 
@@ -8,11 +9,10 @@ import {
 } from './swizzle-passport';
 import { storageHandler, addUserToFile, removeUserFromFile, getFileUrl, saveFile, deleteFile } from './swizzle-storage';
 import { getUser, editUser, createUser, searchUsers, signTokens, refreshTokens } from './swizzle-users';
-import {getSecret} from './swizzle-secrets';
 import { analyticsMiddleware } from './swizzle-monitoring';
 
 export {
-  getSecret,
+  initializeSecrets,
   analyticsMiddleware,
   
   setupPassport,

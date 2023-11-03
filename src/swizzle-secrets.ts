@@ -1,4 +1,3 @@
-var globalSecretObject: any = {}
 import crypto from 'crypto';
 import dotenv from 'dotenv';
 dotenv.config()
@@ -27,7 +26,7 @@ function decrypt(privateKeyBase64: any, encryptedSecretBase64: any) {
     }
 }
 
-(function initialize() {
+export function initializeSecrets() {
     const superSecret = process.env.SWIZZLE_SUPER_SECRET;
     const thisEnvironment = process.env.SWIZZLE_ENV || "test";
 
@@ -40,10 +39,6 @@ function decrypt(privateKeyBase64: any, encryptedSecretBase64: any) {
     const secrets = JSON.parse(fs.readFileSync("secrets.json", 'utf8'));
 
     for(const key in secrets[thisEnvironment]){
-        globalSecretObject[key] = process.env[key] = decrypt(superSecret, secrets[thisEnvironment][key]);
+        process.env[key] = decrypt(superSecret, secrets[thisEnvironment][key]);
     }
-})();
-
-export const getSecret = (key: any) => {
-    return globalSecretObject[key];
-};
+}

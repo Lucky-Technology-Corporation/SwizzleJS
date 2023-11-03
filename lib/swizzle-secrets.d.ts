@@ -1,2 +1,2 @@
-export declare const getSecret: (key: any) => any;
+export declare function initializeSecrets(): void;
 //# sourceMappingURL=swizzle-secrets.d.ts.map

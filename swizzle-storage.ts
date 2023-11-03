@@ -1,15 +1,14 @@
 import { Storage } from '@google-cloud/storage';
+import { Response } from 'express';
 import { ObjectId } from 'mongodb';
+import { db } from './index';
+import { AuthenticatedRequest } from './swizzle-passport';
 const storage = new Storage(); //Check on this - is this working in digital ocean?
-const { db } = require('./swizzle-db');
-const { optionalAuthentication } = require('./swizzle-passport');
-const express = require('express');
-const router = express.Router();
 
 //URL to access files
 //If public, then it redirects to the google storage URL
 //If private, it checks the user and then redirects to a weeklong signed URL
-export const storageHandler = async (request: any, result: any) => {
+export const storageHandler = async (request: AuthenticatedRequest, result: Response) => {
   try {
     const fileName = request.params.key;
     const lastIndex = fileName.lastIndexOf('.');
@@ -30,8 +29,11 @@ export const storageHandler = async (request: any, result: any) => {
     }
 
     const url = await getItem(document._id + "." + document.fileExtension, document.access)
-    return result.redirect(url)
+    if(typeof url === "string"){
+      return result.redirect(url)
+    }
 
+    return result.status(500).json({ error: 'Failed to sign file' })
   } catch (error) {
     console.error(error);
     return result.status(500).json({ error: error });

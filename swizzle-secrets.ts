@@ -44,8 +44,6 @@ function decrypt(privateKeyBase64: any, encryptedSecretBase64: any) {
     }
 })();
 
-const getSecret = (key: any) => {
+export const getSecret = (key: any) => {
     return globalSecretObject[key];
 };
-
-module.exports = {getSecret, globalSecretObject};

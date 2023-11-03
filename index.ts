@@ -8,13 +8,11 @@ import {
 } from './swizzle-passport';
 import { storageHandler, addUserToFile, removeUserFromFile, getFileUrl, saveFile, deleteFile } from './swizzle-storage';
 import { getUser, editUser, createUser, searchUsers, signTokens, refreshTokens } from './swizzle-users';
-import * as secrets from './swizzle-secrets';
-import * as internalRoutes from './swizzle-internal';
-import * as analyticsMiddleware from './swizzle-monitoring';
+import {getSecret} from './swizzle-secrets';
+import { analyticsMiddleware } from './swizzle-monitoring';
 
 export {
-  secrets,
-  internalRoutes,
+  getSecret,
   analyticsMiddleware,
   
   setupPassport,
@@ -32,7 +30,7 @@ export {
   getFileUrl,
   addUserToFile,
   removeUserFromFile,
-  storageHandler, //TODO: Add to server.js - router.get('/:key', optionalAuthentication, getKeyHandler);
+  storageHandler,
   
   getUser,
   editUser,

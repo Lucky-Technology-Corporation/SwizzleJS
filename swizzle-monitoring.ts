@@ -56,7 +56,7 @@ const saveLogsAsync = async (db: any, logs: any, reqId: any) => {
     );
 };
 
-const analyticsMiddleware = (db: Db) => (req: any, res: any, next: any) => {
+export const analyticsMiddleware = (db: Db) => (req: any, res: any, next: any) => {
     req.headers['x-injected-trace-id'] = uuidv4();
     req.id = req.headers['x-injected-trace-id'];
     req.start = new Date().getTime();
@@ -120,6 +120,3 @@ global.console.error = (...args: any[]) => {
         oldConsole.error(...args);
     }
 }
-
-
-module.exports = analyticsMiddleware;

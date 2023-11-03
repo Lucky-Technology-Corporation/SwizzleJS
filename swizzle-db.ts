@@ -24,7 +24,7 @@ export const init = async () => {
   }
 })();
 
-export const dbProxy = new Proxy({}, {
+export const dbProxy: Db = new Proxy({} as Db, {
   get: function(target, name: string) {
     if (!_db) {
       throw new Error('DB not initialized');

@@ -1,7 +1,7 @@
 var globalSecretObject: any = {}
-require('dotenv').config();
 import crypto from 'crypto';
-
+import dotenv from 'dotenv';
+dotenv.config()
 
 function decrypt(privateKeyBase64: any, encryptedSecretBase64: any) {
     try{

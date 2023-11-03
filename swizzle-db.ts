@@ -1,6 +1,5 @@
 import { Db } from "mongodb";
-
-const {connectDB} = require('./swizzle-db-connection');
+import { connectDB } from "./index";
 
 let _db: Db | null = null;
 

@@ -1,8 +1,7 @@
-const { db } = require('./swizzle-db');
-const { UID } = require('./swizzle-db-connection');
 import { Request } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { ObjectId } from 'mongodb';
+import { db, UID } from './index';
 
 export function addUserIdToUser(user: any){
     return {...user, userId: user._id.toString()}
@@ -10,6 +9,7 @@ export function addUserIdToUser(user: any){
 
 export async function getUser(uid: string | ObjectId) {
     const uidObject = UID(uid);
+    if(!uidObject){ return null }
     var user = await db.collection('_swizzle_users').findOne({ _id: uidObject });
     user = addUserIdToUser(user)
     return user;
@@ -69,12 +69,13 @@ export function refreshTokens(oldRefreshToken: string, hours: number = 24){
 
 export async function editUser(uid: string | ObjectId, newUserProperties: {[key: string]: any}) {
     const uidObject = UID(uid);
+    if(!uidObject){ return null }
     var filteredProperties = newUserProperties
     delete filteredProperties._id
     delete filteredProperties.createdAt
     filteredProperties.updatedAt = new Date()
     delete filteredProperties.lastLoginIp
-    var updatedUser = db.collection('_swizzle_users').updateOne({ _id: uidObject }, { $set: filteredProperties }, { upsert: true, returnDocument: 'after' });
+    var updatedUser = db.collection('_swizzle_users').findOneAndUpdate({ _id: uidObject }, { $set: filteredProperties }, { upsert: true, returnDocument: 'after' });
     updatedUser = addUserIdToUser(updatedUser)
     return updatedUser;
 }
@@ -94,7 +95,10 @@ export async function createUser(properties: {[key: string]: any}, request: Requ
     filteredProperties.subscription = null
     const users = db.collection('_swizzle_users');  
     const result = await users.insertOne(filteredProperties);
-    var newUser = result.ops[0]
-    newUser = addUserIdToUser(newUser)
-    return newUser;
+    if (result.acknowledged) {
+        var newUser = await db.collection('_swizzle_users').findOne({ _id: result.insertedId });
+        newUser = addUserIdToUser(newUser)
+        return newUser;
+    }  
+    return null
 }

@@ -1,5 +1,6 @@
+import dotenv from 'dotenv';
 import { Db, MongoClient, ObjectId } from 'mongodb';
-require('dotenv').config();
+dotenv.config()
 
 let _db: Db | null = null;
 let connectionPromise: Promise<Db | null> | null = null;

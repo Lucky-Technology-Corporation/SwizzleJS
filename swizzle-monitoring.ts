@@ -1,7 +1,8 @@
+import { AsyncLocalStorage } from 'async_hooks';
+import dotenv from 'dotenv';
 import { Db } from "mongodb";
-const { v4: uuidv4 } = require('uuid');
-const { AsyncLocalStorage } = require('async_hooks');
-require('dotenv').config();
+import { v4 } from 'uuid';
+dotenv.config()
 
 const asyncLocalStorage = new AsyncLocalStorage();
 
@@ -57,7 +58,7 @@ const saveLogsAsync = async (db: any, logs: any, reqId: any) => {
 };
 
 export const analyticsMiddleware = (db: Db) => (req: any, res: any, next: any) => {
-    req.headers['x-injected-trace-id'] = uuidv4();
+    req.headers['x-injected-trace-id'] = v4();
     req.id = req.headers['x-injected-trace-id'];
     req.start = new Date().getTime();
     const requestLogs: [string?] = [];
@@ -79,7 +80,7 @@ export const analyticsMiddleware = (db: Db) => (req: any, res: any, next: any) =
 const oldConsole = global.console;
 
 global.console.log = (...args: any[]) => {
-    const { logs, id } = asyncLocalStorage.getStore() || {};
+    const { logs, id } = asyncLocalStorage.getStore() as any;
     if (logs && id) {
         const logMessage = createStructuredLog(args, id, "log");
         logs.push(logMessage);
@@ -90,7 +91,7 @@ global.console.log = (...args: any[]) => {
 }
 
 global.console.info = (...args: any[]) => {
-    const { logs, id } = asyncLocalStorage.getStore() || {};
+    const { logs, id } = asyncLocalStorage.getStore() as any;
     if (logs && id) {
         const logMessage = createStructuredLog(args, id, "info");
         logs.push(logMessage);
@@ -101,7 +102,7 @@ global.console.info = (...args: any[]) => {
 }
 
 global.console.warn = (...args: any[]) => {
-    const { logs, id } = asyncLocalStorage.getStore() || {};
+    const { logs, id } = asyncLocalStorage.getStore() as any;
     if (logs && id) {
         const logMessage = createStructuredLog(args, id, "warn");
         logs.push(logMessage);
@@ -111,7 +112,7 @@ global.console.warn = (...args: any[]) => {
     }
 },
 global.console.error = (...args: any[]) => {
-    const { logs, id } = asyncLocalStorage.getStore() || {};
+    const { logs, id } = asyncLocalStorage.getStore() as any;
     if (logs && id) {
         const logMessage = createStructuredLog(args, id, "error");
         logs.push(logMessage);

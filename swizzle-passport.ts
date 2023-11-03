@@ -1,11 +1,10 @@
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { Db } from "mongodb";
-
-const passport = require('passport');
-const JwtStrategy = require('passport-jwt').Strategy;
-const ExtractJwt = require('passport-jwt').ExtractJwt;
-const mongodb = require('mongodb');
-require('dotenv').config();
+import passport from 'passport'
+import { Strategy, ExtractJwt } from 'passport-jwt'
+import mongodb from 'mongodb'
+import dotenv from 'dotenv'
+dotenv.config()
 
 export interface AuthenticatedRequest extends Request {
     user?: any;
@@ -26,7 +25,7 @@ opts.secretOrKey = process.env.SWIZZLE_JWT_SECRET_KEY;
 
 export async function setupPassport(db: Db) {
 
-    passport.use(new JwtStrategy(opts, async (jwt_payload: any, done: any) => {
+    passport.use(new Strategy(opts, async (jwt_payload: any, done: any) => {
         
         if (!jwt_payload || !jwt_payload.userId) {
             return done(null, false);

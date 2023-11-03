@@ -1,6 +1,6 @@
 {
     "name": "swizzle-js",
-    "version": "1.0.54",
+    "version": "1.0.55",
     "main": "index.js",
     "type": "module",
     "scripts": {},
@@ -19,5 +19,9 @@
         "passport-jwt": "latest",
         "telnyx": "latest",
         "uuid": "latest"
+    },
+    "devDependencies": {
+        "@types/passport-jwt": "^3.0.12",
+        "@types/uuid": "^9.0.6"
     }
 }

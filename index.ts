@@ -20,7 +20,7 @@ export {
   UID,
   optionalAuthentication,
   requiredAuthentication,
-  AuthenticatedRequest, //TODO: Add to server.js and codegen
+  AuthenticatedRequest, 
   
   init as initDb,
   dbProxy as db,

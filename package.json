@@ -1,8 +1,8 @@
 {
     "name": "swizzle-js",
-    "version": "1.0.53",
+    "version": "1.0.54",
     "main": "index.js",
-    "types": "index.d.ts",
+    "type": "module",
     "scripts": {},
     "dependencies": {
         "@google-cloud/storage": "latest",

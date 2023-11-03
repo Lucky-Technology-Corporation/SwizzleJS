@@ -1,8 +1,10 @@
+import { Db } from "mongodb";
+
 const {connectDB} = require('./swizzle-db-connection');
 
-let _db;
+let _db: Db | null = null;
 
-const init = async () => {
+export const init = async () => {
   try {
     if(_db){
       return _db;
@@ -22,13 +24,11 @@ const init = async () => {
   }
 })();
 
-const dbProxy = new Proxy({}, {
-  get: function(target, name) {
+export const dbProxy = new Proxy({}, {
+  get: function(target, name: string) {
     if (!_db) {
       throw new Error('DB not initialized');
     }
-    return _db[name];
+    return _db[name as keyof typeof _db];
   }
 });
-
-module.exports = { db: dbProxy, init };

@@ -1,11 +1,18 @@
+import { NextFunction, Request, RequestHandler, Response } from 'express';
+import { Db } from "mongodb";
+
 const passport = require('passport');
 const JwtStrategy = require('passport-jwt').Strategy;
 const ExtractJwt = require('passport-jwt').ExtractJwt;
 const mongodb = require('mongodb');
 require('dotenv').config();
 
-const opts = {}
-opts.jwtFromRequest = function (req) {
+export interface AuthenticatedRequest extends Request {
+    user?: any;
+}  
+
+const opts: any = {}
+opts.jwtFromRequest = function (req: any) {
     let token = null;
     if (req && req.headers.authorization) {
       token = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
@@ -17,9 +24,9 @@ opts.jwtFromRequest = function (req) {
 };
 opts.secretOrKey = process.env.SWIZZLE_JWT_SECRET_KEY;
 
-async function setupPassport(db) {
+export async function setupPassport(db: Db) {
 
-    passport.use(new JwtStrategy(opts, async (jwt_payload, done) => {
+    passport.use(new JwtStrategy(opts, async (jwt_payload: any, done: any) => {
         
         if (!jwt_payload || !jwt_payload.userId) {
             return done(null, false);
@@ -41,14 +48,18 @@ async function setupPassport(db) {
     }));
     
 
-    passport.serializeUser(function(user, done) {
+    passport.serializeUser(function(user: any, done: any) {
         done(null, user.id);
     });
 
-    passport.deserializeUser(async function(id, done) {
+    passport.deserializeUser(async function(id: any, done: any) {
         const users = db.collection('_swizzle_users');
         try {
             var user = await users.findOne({ _id: new mongodb.ObjectId(id) });
+            if(!user){
+                done(null, false);
+                return
+            }
             user.userId = id;
             done(null, user);
         } catch (err) {
@@ -57,16 +68,16 @@ async function setupPassport(db) {
     });
 }
 
-const optionalAuthentication = (req, res, next) => {
-    passport.authenticate('jwt', { session: false }, (err, user, info) => {
+export const optionalAuthentication: RequestHandler = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    passport.authenticate('jwt', { session: false }, (err: any, user: any, info: any) => {
       if (err) { return next(err); }
       if (user) { req.user = user; } // Attach the user to the request object if authenticated
       next(); // Always continue, even if not authenticated
     })(req, res, next);
 };  
 
-const requiredAuthentication = (req, res, next) => {
-    passport.authenticate('jwt', { session: false }, (err, user, info) => {
+export const requiredAuthentication = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    passport.authenticate('jwt', { session: false }, (err: any, user: any, info: any) => {
         if (err) { return next(err); }
         if (!user) { return res.status(401).send({error: "Unauthorized"}); }
         req.user = user; // Attach the user to the request object if authenticated
@@ -74,6 +85,5 @@ const requiredAuthentication = (req, res, next) => {
     })(req, res, next);
 };
 
-module.exports = {setupPassport, optionalAuthentication, requiredAuthentication};
 
 

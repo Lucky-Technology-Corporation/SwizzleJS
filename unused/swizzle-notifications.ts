@@ -1,10 +1,10 @@
-const { ObjectId } = require('mongodb');
 const { db } = require('./swizzle-db');
+import { ObjectId } from "mongodb";
 const secrets = require('./swizzle-secrets');
 
 var apn = require('apn');
-var provider = undefined;
-var notificationBundleId = undefined;
+var provider: any = undefined;
+var notificationBundleId: any = undefined;
 
 function setupNotifications() {
     const keySecret = secrets.get('SWIZZLE_APPLE_NOTIFICATION_KEY');
@@ -33,9 +33,11 @@ function setupNotifications() {
     notificationBundleId = bundleId;
 }
 
-async function sendNotification(user, title, body, badge) {
+async function sendNotification(user: any, title: string, body: object, badge: number) {
     var badgeNumber = 0
-    if(badge && !isNaN(parseInt(badge))){ badgeNumber = parseInt(badge) }
+    if(badge){
+        badgeNumber = badge
+    }
 
     var notification = new apn.Notification({
         alert: {
@@ -52,7 +54,7 @@ async function sendNotification(user, title, body, badge) {
     return sendNotificationHelper(user, notification);
 }
 
-async function sendNotificationHelper(user, notification) {
+async function sendNotificationHelper(user: any, notification: any) {
     if (!provider) {
         return Promise.reject(new Error('Make sure to call setupNotifications before sending any notifications.'));
     }

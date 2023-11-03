@@ -1,9 +1,9 @@
-var globalSecretObject = {}
+var globalSecretObject: any = {}
 require('dotenv').config();
-const crypto = require('crypto');
+import crypto from 'crypto';
 
 
-function decrypt(privateKeyBase64, encryptedSecretBase64) {
+function decrypt(privateKeyBase64: any, encryptedSecretBase64: any) {
     try{
         // Skip empty secrets
         if (encryptedSecretBase64 === '') return '';
@@ -44,7 +44,7 @@ function decrypt(privateKeyBase64, encryptedSecretBase64) {
     }
 })();
 
-const getSecret = (key) => {
+const getSecret = (key: any) => {
     return globalSecretObject[key];
 };
 

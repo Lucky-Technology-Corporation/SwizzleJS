@@ -1,11 +1,10 @@
-const MongoClient = require('mongodb').MongoClient;
-const ObjectId = require('mongodb').ObjectId;
+import { Db, MongoClient, ObjectId } from 'mongodb';
 require('dotenv').config();
 
-let _db = null;
-let connectionPromise = null;
+let _db: Db | null = null;
+let connectionPromise: Promise<Db | null> | null = null;
 
-const connectDB = async () => {
+export const connectDB = async () => {
   if (_db) {
     return _db;
   }
@@ -27,7 +26,7 @@ const connectDB = async () => {
       _db = client.db("main");
       console.log('Database connected');
       return _db;
-    } catch (err) {
+    } catch (err: any) {
       console.error(err.message);
       process.exit(1);
     }
@@ -36,22 +35,17 @@ const connectDB = async () => {
   return connectionPromise;
 };
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const UID = (user) => {
+export const UID = (user: ObjectId | string | any): ObjectId | null => {
   if(!user || !user.userId || !user._id){
     return null;
   }
   if(typeof user === 'string'){
     return new ObjectId(user);
   }
-  if(user._id){
+  if(user._id instanceof ObjectId){
     return user._id;
   }
   return new ObjectId(user.userId);
-};
-
-module.exports = {
-  connectDB,
-  UID
 };

@@ -1,8 +1,8 @@
 import { Storage } from '@google-cloud/storage';
 import { Response } from 'express';
 import { ObjectId } from 'mongodb';
-import { db } from './index';
 import { AuthenticatedRequest } from './swizzle-passport';
+import { db } from '.';
 const storage = new Storage(); //Check on this - is this working in digital ocean?
 
 //URL to access files

@@ -1,5 +1,5 @@
 import { Db } from "mongodb";
-import { connectDB } from "./index";
+import { connectDB } from "./swizzle-db-connection";
 
 let _db: Db | null = null;
 

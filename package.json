@@ -1,27 +1,30 @@
 {
-    "name": "swizzle-js",
-    "version": "1.0.55",
-    "main": "index.js",
-    "type": "module",
-    "scripts": {},
-    "dependencies": {
-        "@google-cloud/storage": "latest",
-        "@types/express": "^4.17.20",
-        "apn": "latest",
-        "app-store-server-api": "latest",
-        "async_hooks": "latest",
-        "crypto": "latest",
-        "dotenv": "latest",
-        "express": "latest",
-        "jsonwebtoken": "latest",
-        "mongodb": "latest",
-        "passport": "latest",
-        "passport-jwt": "latest",
-        "telnyx": "latest",
-        "uuid": "latest"
-    },
-    "devDependencies": {
-        "@types/passport-jwt": "^3.0.12",
-        "@types/uuid": "^9.0.6"
-    }
+  "name": "swizzle-js",
+  "version": "1.0.55",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@google-cloud/storage": "latest",
+    "@types/express": "^4.17.20",
+    "apn": "latest",
+    "app-store-server-api": "latest",
+    "async_hooks": "latest",
+    "crypto": "latest",
+    "dotenv": "latest",
+    "express": "latest",
+    "jsonwebtoken": "latest",
+    "mongodb": "latest",
+    "passport": "latest",
+    "passport-jwt": "latest",
+    "telnyx": "latest",
+    "uuid": "latest"
+  },
+  "devDependencies": {
+    "@types/passport-jwt": "^3.0.12",
+    "@types/uuid": "^9.0.6",
+    "typescript": "^5.2.2"
+  }
 }

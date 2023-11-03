@@ -77,47 +77,71 @@ export const analyticsMiddleware = (db: Db) => (req: any, res: any, next: any) =
     });
 };
 
-const oldConsole = global.console;
+
+const originalConsoleLog = console.log;
+const originalConsoleInfo = console.info;
+const originalConsoleWarn = console.warn;
+const originalConsoleError = console.error;
 
 global.console.log = (...args: any[]) => {
-    const { logs, id } = asyncLocalStorage.getStore() as any;
+    const store = asyncLocalStorage.getStore() as any;
+    if (!store) {
+        originalConsoleLog.apply(console, args);
+        return
+    }
+    const { logs, id } = store
     if (logs && id) {
         const logMessage = createStructuredLog(args, id, "log");
         logs.push(logMessage);
-        oldConsole.log(logMessage);
+        originalConsoleLog.call(console, logMessage);
     } else {
-        oldConsole.log(...args);
+        originalConsoleLog.apply(console, args);
     }
 }
 
 global.console.info = (...args: any[]) => {
-    const { logs, id } = asyncLocalStorage.getStore() as any;
+    const store = asyncLocalStorage.getStore() as any;
+    if (!store) {
+        originalConsoleInfo.apply(console, args);
+        return
+    }
+    const { logs, id } = store
     if (logs && id) {
         const logMessage = createStructuredLog(args, id, "info");
         logs.push(logMessage);
-        oldConsole.info(logMessage);
+        originalConsoleInfo.call(console, logMessage);
     } else {
-        oldConsole.info(...args);
+        originalConsoleInfo.apply(console, args);
     }
 }
 
 global.console.warn = (...args: any[]) => {
-    const { logs, id } = asyncLocalStorage.getStore() as any;
+    const store = asyncLocalStorage.getStore() as any;
+    if (!store) {
+        originalConsoleWarn.apply(console, args);
+        return
+    }
+    const { logs, id } = store
     if (logs && id) {
         const logMessage = createStructuredLog(args, id, "warn");
         logs.push(logMessage);
-        oldConsole.warn(logMessage);
+        originalConsoleWarn.call(console, logMessage);
     } else {
-        oldConsole.warn(...args);
+        originalConsoleWarn.apply(console, args);
     }
-},
+};
 global.console.error = (...args: any[]) => {
-    const { logs, id } = asyncLocalStorage.getStore() as any;
+    const store = asyncLocalStorage.getStore() as any;
+    if (!store) {
+        originalConsoleError.apply(console, args);
+        return
+    }
+    const { logs, id } = store
     if (logs && id) {
         const logMessage = createStructuredLog(args, id, "error");
         logs.push(logMessage);
-        oldConsole.error(logMessage);
+        originalConsoleError.call(console, logMessage);
     } else {
-        oldConsole.error(...args);
+        originalConsoleError.apply(console, args);
     }
 }

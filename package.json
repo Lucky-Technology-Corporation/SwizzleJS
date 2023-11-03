@@ -1,10 +1,11 @@
 {
   "name": "swizzle-js",
-  "version": "1.0.55",
+  "version": "1.0.58",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "push": "tsc && npm publish"
   },
   "dependencies": {
     "@google-cloud/storage": "latest",

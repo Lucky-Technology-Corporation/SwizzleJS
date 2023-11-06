@@ -1,9 +1,8 @@
+import dotenv from 'dotenv';
 import { NextFunction, Request, RequestHandler, Response } from 'express';
-import { Db } from "mongodb";
-import passport from 'passport'
-import { Strategy, ExtractJwt } from 'passport-jwt'
-import mongodb from 'mongodb'
-import dotenv from 'dotenv'
+import { Db, ObjectId } from 'mongodb';
+import passport from 'passport';
+import { ExtractJwt, Strategy } from 'passport-jwt';
 dotenv.config()
 
 export interface AuthenticatedRequest extends Request {
@@ -33,7 +32,7 @@ export async function setupPassport(db: Db) {
 
         try {
             const users = db.collection('_swizzle_users'); 
-            var user = await users.findOne({ _id: new mongodb.ObjectId(jwt_payload.userId) });   
+            var user = await users.findOne({ _id: new ObjectId(jwt_payload.userId) });   
 
             if (user) {
                 user.userId = jwt_payload.userId;
@@ -54,7 +53,7 @@ export async function setupPassport(db: Db) {
     passport.deserializeUser(async function(id: any, done: any) {
         const users = db.collection('_swizzle_users');
         try {
-            var user = await users.findOne({ _id: new mongodb.ObjectId(id) });
+            var user = await users.findOne({ _id: new ObjectId(id) });
             if(!user){
                 done(null, false);
                 return

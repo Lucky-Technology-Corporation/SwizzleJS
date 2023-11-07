@@ -1,8 +1,8 @@
 import { Request } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { ObjectId } from 'mongodb';
-import { UID } from './swizzle-db-connection';
 import { db } from '.';
+import { UID } from './swizzle-db-connection';
 
 export function addUserIdToUser(user: any){
     return {...user, userId: user._id.toString()}

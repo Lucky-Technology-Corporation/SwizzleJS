@@ -24,8 +24,7 @@ opts.secretOrKey = process.env.SWIZZLE_JWT_SECRET_KEY;
 
 export async function setupPassport(db: Db) {
 
-    passport.use(new Strategy(opts, async (jwt_payload: any, done: any) => {
-        
+    passport.use(new Strategy(opts, async (jwt_payload: any, done: any) => {   
         if (!jwt_payload || !jwt_payload.userId) {
             return done(null, false);
         }
@@ -55,7 +54,6 @@ export async function setupPassport(db: Db) {
         try {
             var user = await users.findOne({ _id: new ObjectId(id) });
             if(!user){
-                console.log(`No user found with ID: ${id}`);
                 done(null, false);
                 return
             }

@@ -47,7 +47,7 @@ export async function setupPassport(db: Db) {
     
 
     passport.serializeUser(function(user: any, done: any) {
-        done(null, user.id);
+        done(null, user._id.toString());
     });
 
     passport.deserializeUser(async function(id: any, done: any) {
@@ -55,10 +55,11 @@ export async function setupPassport(db: Db) {
         try {
             var user = await users.findOne({ _id: new ObjectId(id) });
             if(!user){
+                console.log(`No user found with ID: ${id}`);
                 done(null, false);
                 return
             }
-            user.userId = id;
+            user.userId = id.toString();
             done(null, user);
         } catch (err) {
             done(err, null);

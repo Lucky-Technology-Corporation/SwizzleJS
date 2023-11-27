@@ -95,6 +95,10 @@ export async function createUser(properties: {[key: string]: any}, request: Requ
     }
     filteredProperties.subscription = null
     const users = db.collection('_swizzle_users');  
+    const existingUser = await users.findOne({ email: filteredProperties.email });
+    if(existingUser){
+        return null
+    }
     const result = await users.insertOne(filteredProperties);
     if (result.acknowledged) {
         var newUser = await db.collection('_swizzle_users').findOne({ _id: result.insertedId });

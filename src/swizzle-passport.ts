@@ -70,7 +70,7 @@ export async function setupPassport(db: Db) {
 export const optionalAuthentication: RequestHandler = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     passport.authenticate('jwt', { session: false }, (err: any, user: any, info: any) => {
       if (err) { return next(err); }
-      if (user) { req.user = user; } // Attach the user to the request object if authenticated
+      if (user && !user._deactivated) { req.user = user; } // Attach the user to the request object if authenticated
       next(); // Always continue, even if not authenticated
     })(req, res, next);
 };  
@@ -78,7 +78,7 @@ export const optionalAuthentication: RequestHandler = (req: AuthenticatedRequest
 export const requiredAuthentication = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     passport.authenticate('jwt', { session: false }, (err: any, user: any, info: any) => {
         if (err) { return next(err); }
-        if (!user) { return res.status(401).send({error: "Unauthorized"}); }
+        if (!user || user._deactivated) { return res.status(401).send({error: "Unauthorized"}); }
         req.user = user; // Attach the user to the request object if authenticated
         next(); // Always continue, even if not authenticated
     })(req, res, next);

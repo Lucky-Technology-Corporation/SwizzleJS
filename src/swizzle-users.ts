@@ -12,13 +12,14 @@ export async function getUser(uid: string | ObjectId) {
     const uidObject = UID(uid);
     if(!uidObject){ return null }
     var user = await db.collection('_swizzle_users').findOne({ _id: uidObject });
+    if(!user || (user && user._deactivated)){ return null }
     user = addUserIdToUser(user)
     return user;
 }
 
 export async function searchUsers(query: object) {
     var users = await db.collection('_swizzle_users').find(query).toArray();
-    users = users.map(addUserIdToUser)
+    users = users.map(addUserIdToUser).filter(user => !user._deactivated)
     return users;
 }
 

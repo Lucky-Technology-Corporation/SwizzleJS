@@ -23,7 +23,7 @@ export async function searchUsers(query: object) {
     return users;
 }
 
-export function signTokens(uid: string, hours: number = 24): { accessToken: string, refreshToken: string } | null {
+export async function signTokens(uid: string, hours: number = 24): Promise<{ accessToken: string; refreshToken: string; } | null> {
     try {
         const secretKey = process.env.SWIZZLE_JWT_SECRET_KEY
         const refreshSecretKey = process.env.SWIZZLE_REFRESH_JWT_SECRET_KEY
@@ -31,8 +31,14 @@ export function signTokens(uid: string, hours: number = 24): { accessToken: stri
             return null
         }
         
-        const accessToken = jwt.sign({ userId: uid }, secretKey, { expiresIn: `${hours}h` });
-        const refreshToken = jwt.sign({ userId: uid }, refreshSecretKey);
+        const uidObject = UID(uid);
+        if(!uidObject){ return null }
+        var user = await db.collection('_swizzle_users').findOne({ _id: uidObject });
+        if(!user || (user && user._deactivated)){ return null }
+        const userObject = addUserIdToUser(user)
+
+        const accessToken = jwt.sign(userObject, secretKey, { expiresIn: `${hours}h` });
+        const refreshToken = jwt.sign(userObject, refreshSecretKey);
 
         return { accessToken, refreshToken }
     } catch (err) {
@@ -41,7 +47,7 @@ export function signTokens(uid: string, hours: number = 24): { accessToken: stri
     }
 }
 
-export function refreshTokens(oldRefreshToken: string, hours: number = 24){
+export async function refreshTokens(oldRefreshToken: string, hours: number = 24): Promise<{ accessToken: string; refreshToken: string; } | null>{
     try {
         const refreshSecretKey = process.env.SWIZZLE_REFRESH_JWT_SECRET_KEY
         if(!refreshSecretKey){
@@ -57,7 +63,7 @@ export function refreshTokens(oldRefreshToken: string, hours: number = 24){
         }
         const userId = (decoded as JwtPayload & { userId: string }).userId;
         
-        const newTokens = signTokens(userId, hours)
+        const newTokens = await signTokens(userId, hours)
         if(!newTokens){
             return null
         }

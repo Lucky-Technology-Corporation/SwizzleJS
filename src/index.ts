@@ -6,6 +6,7 @@ import { connectDB, UID } from './swizzle-db-connection';
 import {
     optionalAuthentication,
     requiredAuthentication,
+    jobAuthentication,
     setupPassport,
     AuthenticatedRequest
 } from './swizzle-passport';
@@ -22,6 +23,7 @@ export {
     UID,
     optionalAuthentication,
     requiredAuthentication,
+    jobAuthentication,
     AuthenticatedRequest,
 
     init as initDb,

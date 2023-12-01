@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import { NextFunction, Request, RequestHandler, Response } from 'express';
+import { OAuth2Client } from "google-auth-library";
 import { Db, ObjectId } from 'mongodb';
 import passport from 'passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
@@ -86,3 +87,35 @@ export const requiredAuthentication = (req: AuthenticatedRequest, res: Response,
 
 
 
+export const jobAuthentication = async (request: AuthenticatedRequest, response: Response, next: NextFunction) => {
+    const authHeader = request.headers['authorization'];
+    if (!authHeader) {
+        return response.status(401).send('Unauthorized');
+    }
+
+    const idToken = authHeader.split(' ')[1];
+    const oAuth2Client = new OAuth2Client();
+
+    try {
+        const ticket = await oAuth2Client.verifyIdToken({
+            idToken,
+            audience: request.originalUrl,
+        });
+
+        const payload = ticket.getPayload();
+        if(payload == undefined){ return response.status(401).send('Unauthorized'); }
+
+        const payloadIssuerDomain = payload.iss.replace(/^https?:\/\//, '');
+
+        if (payload.email !== process.env.SWIZZLE_JOB_INVOKER_SA_EMAIL 
+            || payloadIssuerDomain !== 'accounts.google.com'
+            || !payload.email_verified) {
+            return response.status(401).send('Unauthorized');
+        }
+
+    } catch (error) {
+        return response.status(400);
+    }
+
+    next()
+}

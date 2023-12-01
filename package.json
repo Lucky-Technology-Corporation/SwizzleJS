@@ -1,6 +1,6 @@
 {
   "name": "swizzle-js",
-  "version": "1.0.73",
+  "version": "1.0.74",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "exports": {
@@ -22,6 +22,7 @@
     "crypto": "latest",
     "dotenv": "latest",
     "express": "latest",
+    "google-auth-library": "^9.2.0",
     "jsonwebtoken": "latest",
     "mongodb": "latest",
     "passport": "latest",

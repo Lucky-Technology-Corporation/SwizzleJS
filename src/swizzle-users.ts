@@ -1,6 +1,6 @@
 import { Request } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import { ObjectId } from 'mongodb';
+import { ObjectId, Sort } from 'mongodb';
 import { db } from '.';
 import { UID } from './swizzle-db-connection';
 
@@ -17,8 +17,16 @@ export async function getUser(uid: string | ObjectId) {
     return user;
 }
 
-export async function searchUsers(query: object) {
-    var users = await db.collection('_swizzle_users').find(query).toArray();
+export async function searchUsers(query: object, sort?: Sort, limit?: number) {
+    var usersQuery = db.collection('_swizzle_users').find(query)
+    if (sort) {
+        usersQuery = usersQuery.sort(sort);
+    }
+
+    if (limit) {
+        usersQuery = usersQuery.limit(limit);
+    }
+    var users = await usersQuery.toArray();
     users = users.map(addUserIdToUser).filter(user => !user._deactivated)
     return users;
 }

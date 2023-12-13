@@ -26,7 +26,6 @@ opts.secretOrKey = process.env.SWIZZLE_JWT_SECRET_KEY;
 export async function setupPassport(db: Db) {
 
     passport.use(new Strategy(opts, async (jwt_payload: any, done: any) => {   
-        console.log("jwt_payload", jwt_payload)
         if (!jwt_payload || !jwt_payload.userId) {
             return done(null, false);
         }

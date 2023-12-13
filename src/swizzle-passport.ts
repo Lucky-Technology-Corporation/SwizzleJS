@@ -33,8 +33,6 @@ export async function setupPassport(db: Db) {
         try {
             const users = db.collection('_swizzle_users'); 
             var user = await users.findOne({ _id: new ObjectId(jwt_payload.userId) });   
-            console.log("user", JSON.stringify(user))
-            console.log("jwt_payload", jwt_payload)
             if (user) {
                 user.userId = jwt_payload.userId;
                 return done(null, user);

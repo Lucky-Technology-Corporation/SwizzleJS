@@ -109,14 +109,14 @@ export async function createUser(properties: {[key: string]: any}, request: Requ
         filteredProperties.lastLoginIp = ip
     }
     filteredProperties.subscription = null
-    const users = db.collection('_swizzle_users');  
+    const users = db.collection('users');  
     const existingUser = await users.findOne({ email: filteredProperties.email });
     if(existingUser){
         return null
     }
     const result = await users.insertOne(filteredProperties);
     if (result.acknowledged) {
-        var newUser = await db.collection('_swizzle_users').findOne({ _id: result.insertedId });
+        var newUser = await db.collection('users').findOne({ _id: result.insertedId });
         newUser = addUserIdToUser(newUser)
         return newUser;
     }  

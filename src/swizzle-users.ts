@@ -11,14 +11,14 @@ export function addUserIdToUser(user: any){
 export async function getUser(uid: string | ObjectId) {
     const uidObject = UID(uid);
     if(!uidObject){ return null }
-    var user = await db.collection('_swizzle_users').findOne({ _id: uidObject });
+    var user = await db.collection('users').findOne({ _id: uidObject });
     if(!user || (user && user._deactivated)){ return null }
     user = addUserIdToUser(user)
     return user;
 }
 
 export async function searchUsers(query: object, sort?: Sort, limit?: number) {
-    var usersQuery = db.collection('_swizzle_users').find(query)
+    var usersQuery = db.collection('users').find(query)
     if (sort) {
         usersQuery = usersQuery.sort(sort);
     }
@@ -41,7 +41,7 @@ export async function signTokens(uid: string, hours: number = 24): Promise<{ acc
         
         const uidObject = UID(uid);
         if(!uidObject){ return null }
-        var user = await db.collection('_swizzle_users').findOne({ _id: uidObject });
+        var user = await db.collection('users').findOne({ _id: uidObject });
         if(!user || (user && user._deactivated)){ return null }
         const userObject = addUserIdToUser(user)
 
@@ -91,7 +91,7 @@ export async function editUser(uid: string | ObjectId, newUserProperties: {[key:
     delete filteredProperties.createdAt
     filteredProperties.updatedAt = new Date()
     delete filteredProperties.lastLoginIp
-    var updatedUser = db.collection('_swizzle_users').findOneAndUpdate({ _id: uidObject }, { $set: filteredProperties }, { upsert: true, returnDocument: 'after' });
+    var updatedUser = db.collection('users').findOneAndUpdate({ _id: uidObject }, { $set: filteredProperties }, { upsert: true, returnDocument: 'after' });
     updatedUser = addUserIdToUser(updatedUser)
     return updatedUser;
 }

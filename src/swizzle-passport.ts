@@ -31,7 +31,7 @@ export async function setupPassport(db: Db) {
         }
 
         try {
-            const users = db.collection('_swizzle_users'); 
+            const users = db.collection('users'); 
             var user = await users.findOne({ _id: new ObjectId(jwt_payload.userId) });   
             if (user) {
                 user.userId = jwt_payload.userId;
@@ -50,7 +50,7 @@ export async function setupPassport(db: Db) {
     });
 
     passport.deserializeUser(async function(id: any, done: any) {
-        const users = db.collection('_swizzle_users');
+        const users = db.collection('users');
         try {
             var user = await users.findOne({ _id: new ObjectId(id) });
             if(!user){
